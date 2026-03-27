@@ -13,13 +13,12 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: var(--tg-theme-bg-color, #0a0a0a);
-            color: var(--tg-theme-text-color, #ffffff);
+            background: #0a0a0a;
+            color: #ffffff;
             overflow: hidden;
             height: 100vh;
         }
         
-        /* Telegram-like theme */
         :root {
             --bg-color: #0a0a0a;
             --sidebar-bg: #111111;
@@ -39,7 +38,6 @@
             height: 100vh;
         }
         
-        /* Sidebar (Chat List) */
         .sidebar {
             width: 320px;
             background: var(--sidebar-bg);
@@ -114,7 +112,6 @@
             padding: 8px;
         }
         
-        /* Search */
         .search-area {
             padding: 12px;
             border-bottom: 1px solid var(--border-color);
@@ -130,7 +127,6 @@
             font-size: 14px;
         }
         
-        /* Chats list */
         .chats-list {
             flex: 1;
             overflow-y: auto;
@@ -178,7 +174,6 @@
             color: var(--text-secondary);
         }
         
-        /* Chat Area */
         .chat-area {
             flex: 1;
             display: flex;
@@ -219,7 +214,6 @@
             color: var(--text-secondary);
         }
         
-        /* Messages */
         .messages {
             flex: 1;
             overflow-y: auto;
@@ -270,6 +264,7 @@
             display: flex;
             justify-content: flex-end;
             gap: 8px;
+            margin-top: 4px;
         }
         
         .message-actions {
@@ -293,7 +288,6 @@
             cursor: pointer;
         }
         
-        /* Input area */
         .input-area {
             padding: 12px 16px;
             background: var(--header-bg);
@@ -345,7 +339,6 @@
             padding: 4px 16px;
         }
         
-        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -424,6 +417,80 @@
             color: var(--text-color);
         }
         
+        .admin-button {
+            width: 100%;
+            padding: 10px;
+            background: var(--accent);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            cursor: pointer;
+        }
+        
+        .close-button {
+            width: 100%;
+            margin-top: 16px;
+            padding: 10px;
+            background: #2c2c2c;
+            border: none;
+            border-radius: 12px;
+            color: white;
+            cursor: pointer;
+        }
+        
+        #auth {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #0a0a0a;
+        }
+        
+        .auth-card {
+            background: #1f1f1f;
+            padding: 32px;
+            border-radius: 28px;
+            width: 320px;
+        }
+        
+        .auth-card h2 {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        
+        .auth-card input {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            background: #2c2c2c;
+            border: none;
+            border-radius: 20px;
+            color: white;
+            font-size: 16px;
+        }
+        
+        .auth-card button {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            background: var(--accent);
+            border: none;
+            border-radius: 20px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .auth-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+        
+        .auth-buttons button {
+            flex: 1;
+        }
+        
         @media (max-width: 768px) {
             .sidebar {
                 position: fixed;
@@ -441,15 +508,15 @@
     </style>
 </head>
 <body>
-<div id="auth" style="display: flex; justify-content: center; align-items: center; height: 100vh;">
-    <div style="background: #1f1f1f; padding: 32px; border-radius: 28px; width: 320px;">
-        <h2 style="text-align: center; margin-bottom: 24px;">📱 Wertongramm</h2>
-        <input type="text" id="phone" placeholder="Телефон или имя" style="width: 100%; padding: 12px; margin: 8px 0; background: #2c2c2c; border: none; border-radius: 20px; color: white;">
-        <input type="text" id="username" placeholder="Имя (при регистрации)" style="width: 100%; padding: 12px; margin: 8px 0; background: #2c2c2c; border: none; border-radius: 20px; color: white;">
-        <input type="password" id="password" placeholder="Пароль" style="width: 100%; padding: 12px; margin: 8px 0; background: #2c2c2c; border: none; border-radius: 20px; color: white;">
-        <div style="display: flex; gap: 10px; margin-top: 16px;">
-            <button id="registerBtn" style="flex: 1; padding: 12px; background: #2c6bff; border: none; border-radius: 20px; color: white; font-weight: bold;">Регистрация</button>
-            <button id="loginBtn" style="flex: 1; padding: 12px; background: #2c6bff; border: none; border-radius: 20px; color: white; font-weight: bold;">Вход</button>
+<div id="auth">
+    <div class="auth-card">
+        <h2>📱 Wertongramm</h2>
+        <input type="text" id="phone" placeholder="Телефон или имя">
+        <input type="text" id="username" placeholder="Имя (при регистрации)">
+        <input type="password" id="password" placeholder="Пароль">
+        <div class="auth-buttons">
+            <button id="registerBtn">Регистрация</button>
+            <button id="loginBtn">Вход</button>
         </div>
     </div>
 </div>
@@ -494,7 +561,6 @@
     </div>
 </div>
 
-<!-- Modal для подарков -->
 <div id="giftModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">🎁 Подарить подарок</div>
@@ -503,9 +569,9 @@
             <div class="modal-header" style="font-size: 16px;">👑 Админ-панель</div>
             <input type="text" id="adminUserId" class="admin-input" placeholder="ID пользователя">
             <input type="number" id="adminMoonsAmount" class="admin-input" placeholder="Количество лун">
-            <button id="adminAddMoonsBtn" style="width: 100%; padding: 10px; background: #2c6bff; border: none; border-radius: 12px; color: white;">➕ Выдать луны</button>
+            <button id="adminAddMoonsBtn" class="admin-button">➕ Выдать луны</button>
         </div>
-        <button id="closeModalBtn" style="width: 100%; margin-top: 16px; padding: 10px; background: #2c2c2c; border: none; border-radius: 12px; color: white;">Закрыть</button>
+        <button id="closeModalBtn" class="close-button">Закрыть</button>
     </div>
 </div>
 
@@ -549,6 +615,10 @@ document.getElementById('registerBtn').onclick = async () => {
     const phone = document.getElementById('phone').value;
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
+    if (!phone || !password) {
+        alert('Телефон и пароль обязательны');
+        return;
+    }
     const res = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -568,6 +638,10 @@ document.getElementById('registerBtn').onclick = async () => {
 document.getElementById('loginBtn').onclick = async () => {
     const phone = document.getElementById('phone').value;
     const password = document.getElementById('password').value;
+    if (!phone || !password) {
+        alert('Телефон и пароль обязательны');
+        return;
+    }
     const res = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -622,7 +696,9 @@ async function loadGifts() {
     const res = await fetch('/api/gifts', {
         headers: { 'Authorization': `Bearer ${token}` }
     });
-    allGifts = await res.json();
+    if (res.ok) {
+        allGifts = await res.json();
+    }
 }
 
 async function loadChats() {
@@ -630,8 +706,10 @@ async function loadChats() {
     const res = await fetch('/api/chats', {
         headers: { 'Authorization': `Bearer ${token}` }
     });
-    const chats = await res.json();
-    renderChatList(chats);
+    if (res.ok) {
+        const chats = await res.json();
+        renderChatList(chats);
+    }
 }
 
 function renderChatList(chats) {
@@ -665,24 +743,28 @@ async function openChat(chatId) {
     const res = await fetch(`/api/messages/${chatId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
     });
-    const messages = await res.json();
-    renderMessages(messages);
+    if (res.ok) {
+        const messages = await res.json();
+        renderMessages(messages);
+    }
     
     const chatInfo = await fetch(`/api/chat/${chatId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
     });
-    const chat = await chatInfo.json();
-    let title = chat.title;
-    let avatar = '💬';
-    if (chat.type === 'direct') {
-        const other = chat.members.find(m => m.userId != currentUser.id);
-        title = other ? other.username || other.userId : 'Unknown';
-        avatar = (title[0] || '💬').toUpperCase();
+    if (chatInfo.ok) {
+        const chat = await chatInfo.json();
+        let title = chat.title;
+        let avatar = '💬';
+        if (chat.type === 'direct') {
+            const other = chat.members.find(m => m.userId != currentUser.id);
+            title = other ? other.username || other.userId : 'Unknown';
+            avatar = (title[0] || '💬').toUpperCase();
+        }
+        chatHeaderName.textContent = title;
+        document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
+        const activeEl = document.querySelector(`.chat-item[data-chat-id="${chatId}"]`);
+        if (activeEl) activeEl.classList.add('active');
     }
-    chatHeaderName.textContent = title;
-    document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
-    const activeEl = document.querySelector(`.chat-item[data-chat-id="${chatId}"]`);
-    if (activeEl) activeEl.classList.add('active');
 }
 
 function renderMessages(messages) {
@@ -716,8 +798,8 @@ function renderMessages(messages) {
         if (isOutgoing) {
             const editBtn = div.querySelector('.edit-msg');
             const delBtn = div.querySelector('.delete-msg');
-            editBtn.onclick = () => editMessage(msg.id, msg.text);
-            delBtn.onclick = () => deleteMessage(msg.id);
+            if (editBtn) editBtn.onclick = () => editMessage(msg.id, msg.text);
+            if (delBtn) delBtn.onclick = () => deleteMessage(msg.id);
         }
         messagesContainer.appendChild(div);
     }
@@ -748,7 +830,10 @@ function deleteMessage(messageId) {
 }
 
 sendBtn.onclick = () => {
-    if (!currentChatId) return;
+    if (!currentChatId) {
+        alert('Сначала выберите чат');
+        return;
+    }
     const text = messageInput.value.trim();
     if (!text) return;
     socket.emit('send_message', { chatId: currentChatId, text });
@@ -770,6 +855,8 @@ fileInput.onchange = async () => {
     const data = await res.json();
     if (res.ok) {
         socket.emit('send_message', { chatId: currentChatId, text: '', filePath: data.filePath });
+    } else {
+        alert('Ошибка загрузки файла');
     }
     fileInput.value = '';
 };
@@ -815,9 +902,72 @@ async function sendGift(giftId) {
         giftModal.style.display = 'none';
         await loadUserInfo();
     } else {
-        alert(data.error);
+        alert(data.error || 'Ошибка при отправке подарка');
     }
 }
+
+// Создание чата по телефону
+createChatBtn.onclick = async () => {
+    const phone = newChatPhone.value.trim();
+    if (!phone) {
+        alert('Введите телефон');
+        return;
+    }
+    
+    const token = getToken();
+    if (!token) {
+        alert('Вы не авторизованы');
+        return;
+    }
+    
+    try {
+        // Сначала ищем пользователя по телефону
+        const res = await fetch(`/api/user/by-phone/${phone}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (res.status === 404) {
+            alert('Пользователь с таким телефоном не найден');
+            return;
+        }
+        
+        if (!res.ok) {
+            alert('Ошибка при поиске пользователя');
+            return;
+        }
+        
+        const user = await res.json();
+        
+        if (!user || !user.id) {
+            alert('Пользователь не найден');
+            return;
+        }
+        
+        // Создаём чат
+        const chatRes = await fetch('/api/chats/direct', {
+            method: 'POST',
+            headers: { 
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ userId2: user.id })
+        });
+        
+        const chat = await chatRes.json();
+        
+        if (chatRes.ok && chat.id) {
+            // Обновляем список чатов и открываем новый
+            await loadChats();
+            await openChat(chat.id);
+            newChatPhone.value = '';
+        } else {
+            alert('Ошибка при создании чата: ' + (chat.error || 'неизвестная ошибка'));
+        }
+    } catch (error) {
+        console.error('Ошибка:', error);
+        alert('Ошибка соединения с сервером');
+    }
+};
 
 // Админ: выдача лун
 document.getElementById('adminAddMoonsBtn').onclick = async () => {
@@ -838,6 +988,7 @@ document.getElementById('adminAddMoonsBtn').onclick = async () => {
         alert(`Выдано ${amount} лун пользователю ${data.user.username}`);
         document.getElementById('adminUserId').value = '';
         document.getElementById('adminMoonsAmount').value = '';
+        await loadUserInfo();
     } else {
         alert(data.error);
     }
@@ -846,33 +997,6 @@ document.getElementById('adminAddMoonsBtn').onclick = async () => {
 document.getElementById('closeModalBtn').onclick = () => {
     giftModal.style.display = 'none';
 };
-
-newChatPhone.addEventListener('keypress', async (e) => {
-    if (e.key === 'Enter') {
-        const phone = newChatPhone.value.trim();
-        if (!phone) return;
-        const token = getToken();
-        const res = await fetch(`/api/user/by-phone/${phone}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (!res.ok) {
-            alert('Пользователь не найден');
-            return;
-        }
-        const user = await res.json();
-        const chatRes = await fetch('/api/chats/direct', {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId2: user.id })
-        });
-        const chat = await chatRes.json();
-        if (chat.id) {
-            await loadChats();
-            await openChat(chat.id);
-            newChatPhone.value = '';
-        }
-    }
-});
 
 messageInput.addEventListener('input', () => {
     if (!currentChatId) return;
@@ -904,8 +1028,10 @@ function connectSocket() {
             }
             div.innerHTML = content;
             if (isOutgoing) {
-                div.querySelector('.edit-msg').onclick = () => editMessage(msg.id, msg.text);
-                div.querySelector('.delete-msg').onclick = () => deleteMessage(msg.id);
+                const editBtn = div.querySelector('.edit-msg');
+                const delBtn = div.querySelector('.delete-msg');
+                if (editBtn) editBtn.onclick = () => editMessage(msg.id, msg.text);
+                if (delBtn) delBtn.onclick = () => deleteMessage(msg.id);
             }
             messagesContainer.appendChild(div);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -937,6 +1063,12 @@ function connectSocket() {
             moonsCount.textContent = moons;
         }
     });
+}
+
+// Добавляем переменную для createChatBtn
+const createChatBtn = document.getElementById('createChatBtn');
+if (createChatBtn) {
+    createChatBtn.onclick = createChatBtn.onclick;
 }
 </script>
 </body>
