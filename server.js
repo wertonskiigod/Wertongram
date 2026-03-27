@@ -18,6 +18,8 @@ db.exec(`
     phone TEXT UNIQUE NOT NULL,
     username TEXT UNIQUE,
     password_hash TEXT NOT NULL,
+    bio TEXT DEFAULT '',
+    avatar TEXT,
     moons INTEGER DEFAULT 100,
     is_admin BOOLEAN DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -27,6 +29,7 @@ db.exec(`
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     type TEXT CHECK(type IN ('direct', 'group')) NOT NULL,
     title TEXT,
+    avatar TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
@@ -67,7 +70,6 @@ db.exec(`
     user_id INTEGER NOT NULL,
     gift_id INTEGER NOT NULL,
     from_user_id INTEGER,
-    message_id INTEGER,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (gift_id) REFERENCES gifts(id) ON DELETE CASCADE
@@ -115,7 +117,6 @@ function addUserToNewbiesChannel(userId) {
     db.prepare('INSERT INTO chat_members (chat_id, user_id, role) VALUES (?, ?, ?)').run(newbiesChannelId, userId, 'member');
     console.log(`👋 Пользователь ${userId} добавлен в канал "Новички"`);
     
-    // Добавляем приветственное сообщение
     const user = db.prepare('SELECT username FROM users WHERE id = ?').get(userId);
     const welcomeText = `👋 Добро пожаловать, ${user.username || 'новый пользователь'}! Рады видеть вас в Wertongramm.`;
     const stmt = db.prepare('INSERT INTO messages (chat_id, sender_id, text) VALUES (?, ?, ?)');
@@ -149,15 +150,14 @@ const upload = multer({ storage });
 // ==================== АУТЕНТИФИКАЦИЯ ====================
 
 app.post('/api/register', async (req, res) => {
-  const { phone, password, username } = req.body;
+  const { phone, password, username, bio } = req.body;
   if (!phone || !password) return res.status(400).json({ error: 'Phone and password required' });
   try {
     const hashed = await bcrypt.hash(password, 10);
-    const isAdmin = (username === 'Wertonskiigod' || phone === 'Wertonskiigod') ? 1 : 0;
-    const stmt = db.prepare('INSERT INTO users (phone, username, password_hash, is_admin, moons) VALUES (?, ?, ?, ?, ?)');
-    const info = stmt.run(phone, username || null, hashed, isAdmin, 100);
+    const isAdmin = (username === 'Wertonskiigod') ? 1 : 0;
+    const stmt = db.prepare('INSERT INTO users (phone, username, password_hash, is_admin, moons, bio) VALUES (?, ?, ?, ?, ?, ?)');
+    const info = stmt.run(phone, username || null, hashed, isAdmin, 100, bio || '');
     
-    // Добавляем в канал "Новички"
     addUserToNewbiesChannel(info.lastInsertRowid);
     
     const token = jwt.sign({ userId: info.lastInsertRowid }, JWT_SECRET);
@@ -200,28 +200,33 @@ function requireAdmin(req, res, next) {
 // ==================== API ПОЛЬЗОВАТЕЛЕЙ ====================
 
 app.get('/api/me', authenticate, (req, res) => {
-  const user = db.prepare('SELECT id, phone, username, moons, is_admin FROM users WHERE id = ?').get(req.userId);
+  const user = db.prepare('SELECT id, phone, username, bio, moons, is_admin FROM users WHERE id = ?').get(req.userId);
   res.json(user);
 });
 
 app.get('/api/user/by-phone/:phone', authenticate, (req, res) => {
-  const user = db.prepare('SELECT id, username, moons FROM users WHERE phone = ?').get(req.params.phone);
+  const user = db.prepare('SELECT id, username, bio, moons FROM users WHERE phone = ?').get(req.params.phone);
   if (!user) return res.status(404).json({ error: 'User not found' });
   res.json(user);
 });
 
 app.get('/api/user/:userId', authenticate, (req, res) => {
-  const user = db.prepare('SELECT id, username, moons FROM users WHERE id = ?').get(req.params.userId);
+  const user = db.prepare('SELECT id, username, bio, moons FROM users WHERE id = ?').get(req.params.userId);
   if (!user) return res.status(404).json({ error: 'User not found' });
   res.json(user);
+});
+
+app.post('/api/user/update-bio', authenticate, (req, res) => {
+  const { bio } = req.body;
+  db.prepare('UPDATE users SET bio = ? WHERE id = ?').run(bio, req.userId);
+  res.json({ success: true });
 });
 
 // Админ: выдача лун
 app.post('/api/admin/add-moons', authenticate, requireAdmin, (req, res) => {
   const { userId, amount } = req.body;
   if (!userId || !amount) return res.status(400).json({ error: 'User ID and amount required' });
-  const stmt = db.prepare('UPDATE users SET moons = moons + ? WHERE id = ?');
-  stmt.run(amount, userId);
+  db.prepare('UPDATE users SET moons = moons + ? WHERE id = ?').run(amount, userId);
   const user = db.prepare('SELECT id, username, moons FROM users WHERE id = ?').get(userId);
   io.emit('moons_updated', { userId: user.id, moons: user.moons });
   res.json({ success: true, user });
@@ -236,15 +241,23 @@ app.get('/api/gifts', authenticate, (req, res) => {
 
 app.post('/api/send-gift', authenticate, (req, res) => {
   const { toUserId, giftId, chatId } = req.body;
+  
   const sender = db.prepare('SELECT id, moons FROM users WHERE id = ?').get(req.userId);
   const gift = db.prepare('SELECT * FROM gifts WHERE id = ?').get(giftId);
   
   if (!gift) return res.status(404).json({ error: 'Gift not found' });
   if (sender.moons < gift.price) return res.status(400).json({ error: 'Not enough moons' });
   
+  const toId = toUserId || (() => {
+    const chat = db.prepare('SELECT * FROM chat_members WHERE chat_id = ? AND user_id != ?').get(chatId, req.userId);
+    return chat ? chat.user_id : null;
+  })();
+  
+  if (!toId) return res.status(400).json({ error: 'Recipient not found' });
+  
   db.prepare('UPDATE users SET moons = moons - ? WHERE id = ?').run(gift.price, req.userId);
-  db.prepare('UPDATE users SET moons = moons + ? WHERE id = ?').run(gift.price, toUserId);
-  db.prepare('INSERT INTO user_gifts (user_id, gift_id, from_user_id) VALUES (?, ?, ?)').run(toUserId, giftId, req.userId);
+  db.prepare('UPDATE users SET moons = moons + ? WHERE id = ?').run(gift.price, toId);
+  db.prepare('INSERT INTO user_gifts (user_id, gift_id, from_user_id) VALUES (?, ?, ?)').run(toId, giftId, req.userId);
   
   const message = db.prepare('INSERT INTO messages (chat_id, sender_id, text, gift_id) VALUES (?, ?, ?, ?)')
     .run(chatId, req.userId, `🎁 Подарил(а) ${gift.name} ${gift.icon}`, giftId);
@@ -257,29 +270,16 @@ app.post('/api/send-gift', authenticate, (req, res) => {
   
   io.to(`chat:${chatId}`).emit('new_message', newMessage);
   io.emit('moons_updated', { userId: req.userId, moons: sender.moons - gift.price });
-  io.emit('moons_updated', { userId: toUserId, moons: db.prepare('SELECT moons FROM users WHERE id = ?').get(toUserId).moons });
+  io.emit('moons_updated', { userId: toId, moons: db.prepare('SELECT moons FROM users WHERE id = ?').get(toId).moons });
   
   res.json({ success: true });
-});
-
-app.get('/api/my-gifts', authenticate, (req, res) => {
-  const gifts = db.prepare(`
-    SELECT ug.*, g.name, g.description, g.price, g.icon, u.username as from_username
-    FROM user_gifts ug
-    JOIN gifts g ON g.id = ug.gift_id
-    LEFT JOIN users u ON u.id = ug.from_user_id
-    WHERE ug.user_id = ?
-    ORDER BY ug.created_at DESC
-    LIMIT 50
-  `).all(req.userId);
-  res.json(gifts);
 });
 
 // ==================== API ЧАТОВ ====================
 
 app.get('/api/chats', authenticate, (req, res) => {
   const chats = db.prepare(`
-    SELECT c.id, c.type, c.title,
+    SELECT c.id, c.type, c.title, c.avatar,
            (SELECT json_group_array(json_object('userId', u.id, 'username', u.username))
             FROM chat_members cm2
             JOIN users u ON u.id = cm2.user_id
