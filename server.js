@@ -11,12 +11,15 @@ const fs = require('fs');
 const DATA_DIR = process.env.RAILWAY_VOLUME_MOUNT_PATH || path.join(__dirname, 'data');
 const DB_PATH = path.join(DATA_DIR, 'wertongramm.db');
 const UPLOADS_DIR = path.join(DATA_DIR, 'uploads');
+const AVATARS_DIR = path.join(DATA_DIR, 'avatars');
 
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+if (!fs.existsSync(AVATARS_DIR)) fs.mkdirSync(AVATARS_DIR, { recursive: true });
 
 console.log('💾 Database path:', DB_PATH);
 console.log('📁 Uploads path:', UPLOADS_DIR);
+console.log('🖼️ Avatars path:', AVATARS_DIR);
 
 const Database = require('better-sqlite3');
 const db = new Database(DB_PATH);
@@ -114,25 +117,26 @@ if (giftCount === 0) {
   console.log('✅ Добавлены стандартные подарки');
 }
 
-// ==================== КАНАЛ НОВИЧКИ ====================
-const channelExists = db.prepare('SELECT id FROM chats WHERE title = ? AND type = ?').get('Новички', 'group');
-let newbiesChannelId;
+// ==================== КАНАЛ "ИП Издаболы" ====================
+const channelExists = db.prepare('SELECT id FROM chats WHERE title = ? AND type = ?').get('ИП Издаболы', 'group');
+let groupChannelId;
 if (!channelExists) {
   const insertChannel = db.prepare('INSERT INTO chats (type, title) VALUES (?, ?)');
-  const info = insertChannel.run('group', 'Новички');
-  newbiesChannelId = info.lastInsertRowid;
-  console.log('✅ Создан канал "Новички" с ID:', newbiesChannelId);
+  const info = insertChannel.run('group', 'ИП Издаболы');
+  groupChannelId = info.lastInsertRowid;
+  console.log('✅ Создан канал "ИП Издаболы" с ID:', groupChannelId);
 } else {
-  newbiesChannelId = channelExists.id;
+  groupChannelId = channelExists.id;
+  console.log('✅ Канал "ИП Издаболы" уже существует, ID:', groupChannelId);
 }
 
-function addUserToNewbiesChannel(userId) {
-  const isMember = db.prepare('SELECT 1 FROM chat_members WHERE chat_id = ? AND user_id = ?').get(newbiesChannelId, userId);
+function addUserToGroupChannel(userId) {
+  const isMember = db.prepare('SELECT 1 FROM chat_members WHERE chat_id = ? AND user_id = ?').get(groupChannelId, userId);
   if (!isMember) {
-    db.prepare('INSERT INTO chat_members (chat_id, user_id, role) VALUES (?, ?, ?)').run(newbiesChannelId, userId, 'member');
+    db.prepare('INSERT INTO chat_members (chat_id, user_id, role) VALUES (?, ?, ?)').run(groupChannelId, userId, 'member');
     const user = db.prepare('SELECT username FROM users WHERE id = ?').get(userId);
-    const welcomeText = `👋 Добро пожаловать, ${user.username || 'новый пользователь'}! Рады видеть вас в Wertongramm.`;
-    db.prepare('INSERT INTO messages (chat_id, sender_id, text) VALUES (?, ?, ?)').run(newbiesChannelId, userId, welcomeText);
+    const welcomeText = `👋 Добро пожаловать в "ИП Издаболы", ${user.username || 'новый пользователь'}!`;
+    db.prepare('INSERT INTO messages (chat_id, sender_id, text) VALUES (?, ?, ?)').run(groupChannelId, userId, welcomeText);
   }
 }
 
@@ -149,7 +153,6 @@ app.use(express.json());
 app.use(express.static('public'));
 
 // ==================== НАСТРОЙКА ЗАГРУЗКИ ФАЙЛОВ ====================
-// Определяем тип файла по расширению и MIME
 function getFileType(filename, mimetype) {
   const imageExt = /\.(jpg|jpeg|png|gif|webp|bmp)$/i;
   const videoExt = /\.(mp4|webm|mov|avi|mkv)$/i;
@@ -163,10 +166,13 @@ function getFileType(filename, mimetype) {
   return 'file';
 }
 
-// Настройка multer для загрузки файлов
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, UPLOADS_DIR);
+    if (req.url.includes('/avatar')) {
+      cb(null, AVATARS_DIR);
+    } else {
+      cb(null, UPLOADS_DIR);
+    }
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -191,7 +197,7 @@ const fileFilter = (req, file, cb) => {
 
 const upload = multer({ 
   storage: storage,
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50 MB для видео
+  limits: { fileSize: 50 * 1024 * 1024 },
   fileFilter: fileFilter
 });
 
@@ -209,10 +215,20 @@ app.post('/api/register', async (req, res) => {
   try {
     const hashed = await bcrypt.hash(password, 10);
     const isAdmin = (phone === '13372286752') ? 1 : 0;
-    const stmt = db.prepare('INSERT INTO users (phone, username, password_hash, is_admin, moons, bio) VALUES (?, ?, ?, ?, ?, ?)');
-    const info = stmt.run(phone, username || null, hashed, isAdmin, 100, bio || '');
     
-    addUserToNewbiesChannel(info.lastInsertRowid);
+    // Проверяем, есть ли уже пользователь с именем Tesy
+    let finalUsername = username || phone;
+    if (finalUsername === 'Tesy') {
+      const existingTesy = db.prepare('SELECT id FROM users WHERE username = ?').get('Tesy');
+      if (existingTesy) {
+        finalUsername = phone;
+      }
+    }
+    
+    const stmt = db.prepare('INSERT INTO users (phone, username, password_hash, is_admin, moons, bio) VALUES (?, ?, ?, ?, ?, ?)');
+    const info = stmt.run(phone, finalUsername, hashed, isAdmin, 100, bio || '');
+    
+    addUserToGroupChannel(info.lastInsertRowid);
     
     const token = jwt.sign({ userId: info.lastInsertRowid }, JWT_SECRET, { expiresIn: '30d' });
     res.json({ token, userId: info.lastInsertRowid, isAdmin });
@@ -254,18 +270,18 @@ function requireAdmin(req, res, next) {
 // ==================== API ПОЛЬЗОВАТЕЛЕЙ ====================
 
 app.get('/api/me', authenticate, (req, res) => {
-  const user = db.prepare('SELECT id, phone, username, bio, moons, is_admin FROM users WHERE id = ?').get(req.userId);
+  const user = db.prepare('SELECT id, phone, username, bio, avatar, moons, is_admin FROM users WHERE id = ?').get(req.userId);
   res.json(user);
 });
 
 app.get('/api/user/by-phone/:phone', authenticate, (req, res) => {
-  const user = db.prepare('SELECT id, username, bio, moons FROM users WHERE phone = ?').get(req.params.phone);
+  const user = db.prepare('SELECT id, username, bio, avatar, moons FROM users WHERE phone = ?').get(req.params.phone);
   if (!user) return res.status(404).json({ error: 'User not found' });
   res.json(user);
 });
 
 app.get('/api/user/:userId', authenticate, (req, res) => {
-  const user = db.prepare('SELECT id, username, bio, moons FROM users WHERE id = ?').get(req.params.userId);
+  const user = db.prepare('SELECT id, username, bio, avatar, moons FROM users WHERE id = ?').get(req.params.userId);
   if (!user) return res.status(404).json({ error: 'User not found' });
   res.json(user);
 });
@@ -274,6 +290,23 @@ app.post('/api/user/update-bio', authenticate, (req, res) => {
   const { bio } = req.body;
   db.prepare('UPDATE users SET bio = ? WHERE id = ?').run(bio, req.userId);
   res.json({ success: true });
+});
+
+// Загрузка аватарки
+app.post('/api/upload-avatar', authenticate, upload.single('avatar'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
+  
+  const avatarUrl = `/avatars/${req.file.filename}`;
+  db.prepare('UPDATE users SET avatar = ? WHERE id = ?').run(avatarUrl, req.userId);
+  
+  console.log('🖼️ Avatar uploaded:', avatarUrl);
+  
+  res.json({ 
+    success: true, 
+    avatarUrl: avatarUrl
+  });
 });
 
 app.post('/api/admin/add-moons', authenticate, requireAdmin, (req, res) => {
@@ -375,7 +408,7 @@ app.post('/api/send-gift', authenticate, (req, res) => {
 app.get('/api/chats', authenticate, (req, res) => {
   const chats = db.prepare(`
     SELECT c.id, c.type, c.title, c.avatar,
-           (SELECT json_group_array(json_object('userId', u.id, 'username', u.username))
+           (SELECT json_group_array(json_object('userId', u.id, 'username', u.username, 'avatar', u.avatar))
             FROM chat_members cm2
             JOIN users u ON u.id = cm2.user_id
             WHERE cm2.chat_id = c.id) AS members
@@ -390,7 +423,7 @@ app.get('/api/chats', authenticate, (req, res) => {
 app.get('/api/chat/:chatId', authenticate, (req, res) => {
   const chat = db.prepare(`
     SELECT c.*, 
-           (SELECT json_group_array(json_object('userId', u.id, 'username', u.username))
+           (SELECT json_group_array(json_object('userId', u.id, 'username', u.username, 'avatar', u.avatar))
             FROM chat_members cm
             JOIN users u ON u.id = cm.user_id
             WHERE cm.chat_id = c.id) AS members
@@ -428,7 +461,7 @@ app.get('/api/messages/:chatId', authenticate, (req, res) => {
   const isMember = db.prepare('SELECT 1 FROM chat_members WHERE chat_id = ? AND user_id = ?').get(chatId, req.userId);
   if (!isMember) return res.status(403).json({ error: 'Not a member' });
   const messages = db.prepare(`
-    SELECT m.*, u.username, g.name as gift_name, g.icon as gift_icon
+    SELECT m.*, u.username, u.avatar, g.name as gift_name, g.icon as gift_icon
     FROM messages m
     JOIN users u ON u.id = m.sender_id
     LEFT JOIN gifts g ON g.id = m.gift_id
@@ -466,24 +499,9 @@ app.post('/api/upload', authenticate, upload.single('file'), (req, res) => {
   });
 });
 
-// Раздача статических файлов из папки uploads с правильными MIME-типами
-app.use('/uploads', express.static(UPLOADS_DIR, {
-  setHeaders: (res, filePath) => {
-    if (filePath.endsWith('.mp4')) {
-      res.setHeader('Content-Type', 'video/mp4');
-    } else if (filePath.endsWith('.webm')) {
-      res.setHeader('Content-Type', 'video/webm');
-    } else if (filePath.match(/\.(jpg|jpeg)$/i)) {
-      res.setHeader('Content-Type', 'image/jpeg');
-    } else if (filePath.endsWith('.png')) {
-      res.setHeader('Content-Type', 'image/png');
-    } else if (filePath.endsWith('.gif')) {
-      res.setHeader('Content-Type', 'image/gif');
-    } else if (filePath.endsWith('.webp')) {
-      res.setHeader('Content-Type', 'image/webp');
-    }
-  }
-}));
+// Раздача статических файлов
+app.use('/uploads', express.static(UPLOADS_DIR));
+app.use('/avatars', express.static(AVATARS_DIR));
 
 // ==================== SOCKET.IO ====================
 
@@ -515,7 +533,7 @@ io.on('connection', (socket) => {
     const stmt = db.prepare('INSERT INTO messages (chat_id, sender_id, text, file_path, file_type) VALUES (?, ?, ?, ?, ?)');
     const info = stmt.run(chatId, socket.userId, text, filePath || null, fileType || null);
     const newMessage = db.prepare(`
-      SELECT m.*, u.username 
+      SELECT m.*, u.username, u.avatar
       FROM messages m 
       JOIN users u ON u.id = m.sender_id 
       WHERE m.id = ?
@@ -551,4 +569,6 @@ server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`💾 Database stored at: ${DB_PATH}`);
   console.log(`📁 Uploads stored at: ${UPLOADS_DIR}`);
+  console.log(`🖼️ Avatars stored at: ${AVATARS_DIR}`);
+  console.log(`👥 Группа "ИП Издаболы" ID: ${groupChannelId}`);
 });
