@@ -143,9 +143,8 @@
             transition: all 0.3s;
         }
         
-        .menu-toggle:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 20px rgba(154, 74, 202, 0.5);
+        .menu-toggle:active {
+            transform: scale(0.95);
         }
         
         .sidebar-header {
@@ -360,26 +359,42 @@
         }
         
         .message-image {
-            max-width: 200px;
-            max-height: 200px;
+            max-width: 220px;
+            max-height: 220px;
             border-radius: 12px;
             margin-top: 4px;
             cursor: pointer;
             transition: transform 0.2s;
+            border: 1px solid rgba(154, 74, 202, 0.3);
         }
         
         .message-image:active {
             transform: scale(0.98);
         }
         
-        .message-file {
-            display: inline-block;
-            padding: 4px 8px;
+        .message-video {
+            max-width: 220px;
+            max-height: 220px;
+            border-radius: 12px;
+            margin-top: 4px;
+            cursor: pointer;
+        }
+        
+        .file-attachment {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
             background: rgba(255,255,255,0.1);
-            border-radius: 8px;
+            border-radius: 12px;
             text-decoration: none;
             color: #c96eff;
             margin-top: 4px;
+            transition: all 0.2s;
+        }
+        
+        .file-attachment:active {
+            background: rgba(255,255,255,0.2);
         }
         
         .message-meta {
@@ -771,18 +786,6 @@
             box-shadow: 0 0 10px rgba(255, 68, 68, 0.3);
         }
         
-        .file-attachment {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 12px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 12px;
-            text-decoration: none;
-            color: #c96eff;
-            margin-top: 8px;
-        }
-        
         /* Стили для скролла */
         ::-webkit-scrollbar {
             width: 4px;
@@ -846,7 +849,7 @@
             <button class="gift-btn" id="giftBtn">🎁</button>
             <textarea id="messageInput" placeholder="Сообщение" rows="1"></textarea>
             <button id="sendBtn">➤</button>
-            <input type="file" id="fileInput" style="display: none;">
+            <input type="file" id="fileInput" style="display: none;" accept="image/*,video/*,application/pdf,text/plain">
         </div>
     </div>
 </div>
@@ -975,6 +978,31 @@ document.addEventListener('click', (e) => {
 function validatePhone(phone) {
     const phoneRegex = /^[0-9]{10,15}$/;
     return phoneRegex.test(phone);
+}
+
+// Функция для определения типа файла по расширению
+function getFileTypeFromPath(filePath) {
+    if (!filePath) return null;
+    const ext = filePath.split('.').pop().toLowerCase();
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(ext)) return 'image';
+    if (['mp4', 'webm', 'mov', 'avi', 'mkv'].includes(ext)) return 'video';
+    return 'file';
+}
+
+// Функция для отображения файла в сообщении
+function renderFileAttachment(filePath, fileType) {
+    if (!filePath) return '';
+    
+    const type = fileType || getFileTypeFromPath(filePath);
+    const filename = filePath.split('/').pop();
+    
+    if (type === 'image') {
+        return `<div><img src="${filePath}" class="message-image" onclick="window.open('${filePath}', '_blank')" loading="lazy"></div>`;
+    } else if (type === 'video') {
+        return `<div><video src="${filePath}" controls class="message-video" style="max-width: 220px; max-height: 220px; border-radius: 12px; margin-top: 4px;" preload="metadata"></video></div>`;
+    } else {
+        return `<div><a href="${filePath}" target="_blank" class="file-attachment" download>📎 ${escapeHtml(filename)}</a></div>`;
+    }
 }
 
 // Регистрация
@@ -1136,19 +1164,11 @@ function renderMessages(messages) {
             giftHtml = `<div style="margin: 4px 0;">🎁 ${msg.gift_name} ${msg.gift_icon || ''}</div>`;
         }
         
-        let fileHtml = '';
-        if (msg.file_path) {
-            const isImage = msg.file_path.match(/\.(jpg|jpeg|png|gif|webp)$/i);
-            if (isImage) {
-                fileHtml = `<div><img src="${msg.file_path}" class="message-image" onclick="window.open('${msg.file_path}', '_blank')"></div>`;
-            } else {
-                fileHtml = `<div><a href="${msg.file_path}" target="_blank" class="file-attachment">📎 ${msg.file_path.split('/').pop()}</a></div>`;
-            }
-        }
+        let fileHtml = renderFileAttachment(msg.file_path, msg.file_type);
         
         div.innerHTML = `${senderHtml}
             <div class="message-text">${escapeHtml(msg.text || '')}${giftHtml}${fileHtml}</div>
-            <div class="message-meta">${new Date(msg.created_at).toLocaleTimeString()}</div>
+            <div class="message-meta">${new Date(msg.created_at).toLocaleTimeString()}${msg.edited ? ' (ред.)' : ''}</div>
             ${isOutgoing ? `<div class="message-actions"><button class="edit-msg">✏️</button><button class="delete-msg">🗑️</button></div>` : ''}`;
         
         if (!isOutgoing) {
@@ -1288,6 +1308,13 @@ fileInput.onchange = async () => {
     const file = fileInput.files[0];
     if (!file) return;
     
+    // Проверка размера файла (50 MB для видео)
+    if (file.size > 50 * 1024 * 1024) {
+        alert('Файл слишком большой! Максимум 50 MB');
+        fileInput.value = '';
+        return;
+    }
+    
     const formData = new FormData();
     formData.append('file', file);
     
@@ -1299,7 +1326,12 @@ fileInput.onchange = async () => {
         });
         const data = await res.json();
         if (res.ok && data.filePath) {
-            socket.emit('send_message', { chatId: currentChatId, text: '', filePath: data.filePath });
+            socket.emit('send_message', { 
+                chatId: currentChatId, 
+                text: '', 
+                filePath: data.filePath,
+                fileType: data.fileType 
+            });
         } else {
             alert('Ошибка загрузки файла: ' + (data.error || 'неизвестная ошибка'));
         }
@@ -1404,15 +1436,7 @@ function connectSocket() {
             if (msg.gift_id && msg.gift_name) {
                 giftHtml = `<div style="margin: 4px 0;">🎁 ${msg.gift_name} ${msg.gift_icon || ''}</div>`;
             }
-            let fileHtml = '';
-            if (msg.file_path) {
-                const isImage = msg.file_path.match(/\.(jpg|jpeg|png|gif|webp)$/i);
-                if (isImage) {
-                    fileHtml = `<div><img src="${msg.file_path}" class="message-image" onclick="window.open('${msg.file_path}', '_blank')"></div>`;
-                } else {
-                    fileHtml = `<div><a href="${msg.file_path}" target="_blank" class="file-attachment">📎 ${msg.file_path.split('/').pop()}</a></div>`;
-                }
-            }
+            let fileHtml = renderFileAttachment(msg.file_path, msg.file_type);
             div.innerHTML = `${senderHtml}<div class="message-text">${escapeHtml(msg.text || '')}${giftHtml}${fileHtml}</div><div class="message-meta">${new Date(msg.created_at).toLocaleTimeString()}</div>${isOutgoing ? `<div class="message-actions"><button class="edit-msg">✏️</button><button class="delete-msg">🗑️</button></div>` : ''}`;
             if (!isOutgoing) {
                 const senderSpan = div.querySelector('.message-sender');
