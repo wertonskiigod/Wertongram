@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wertongramm</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="auth">
+        <h2>Wertongramm</h2>
+        <div>
+            <input type="text" id="phone" placeholder="Phone" />
+            <input type="text" id="username" placeholder="Username (optional)" />
+            <input type="password" id="password" placeholder="Password" />
+            <button id="loginBtn">Login</button>
+            <button id="registerBtn">Register</button>
+        </div>
+    </div>
+
+    <div id="app" style="display:none;">
+        <div id="sidebar">
+            <div class="user-info">
+                <span id="currentUser"></span>
+                <button id="logoutBtn">Logout</button>
+            </div>
+            <div class="new-chat">
+                <input type="text" id="newChatPhone" placeholder="User phone to start chat" />
+                <button id="createChatBtn">+</button>
+            </div>
+            <div id="chatList"></div>
+        </div>
+        <div id="chatArea">
+            <div id="chatHeader"></div>
+            <div id="messagesContainer"></div>
+            <div id="inputArea">
+                <textarea id="messageInput" placeholder="Type a message..."></textarea>
+                <input type="file" id="fileInput" style="display:none;" />
+                <button id="attachBtn">📎</button>
+                <button id="sendBtn">Send</button>
+            </div>
+            <div id="typingIndicator" style="font-size:12px; color:gray;"></div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
