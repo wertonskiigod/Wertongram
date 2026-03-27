@@ -147,13 +147,31 @@ const PORT = process.env.PORT || 8080;
 app.use(express.json());
 app.use(express.static('public'));
 
+// Настройка multer для загрузки файлов
 const storage = multer.diskStorage({
-  destination: UPLOADS_DIR,
+  destination: (req, file, cb) => {
+    cb(null, UPLOADS_DIR);
+  },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + '-' + file.originalname);
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + '-' + file.originalname);
   }
 });
-const upload = multer({ storage });
+
+const fileFilter = (req, file, cb) => {
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/mpeg', 'application/pdf', 'text/plain'];
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Неподдерживаемый тип файла'), false);
+  }
+};
+
+const upload = multer({ 
+  storage: storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB
+  fileFilter: fileFilter
+});
 
 // ==================== АУТЕНТИФИКАЦИЯ ====================
 
@@ -252,7 +270,6 @@ app.get('/api/gifts', authenticate, (req, res) => {
   res.json(gifts);
 });
 
-// Получить подарки пользователя (для чужого профиля)
 app.get('/api/user-gifts/:userId', authenticate, (req, res) => {
   const userId = req.params.userId;
   const gifts = db.prepare(`
@@ -400,11 +417,25 @@ app.get('/api/messages/:chatId', authenticate, (req, res) => {
   res.json(messages);
 });
 
+// ==================== API ФАЙЛОВ ====================
+
 app.post('/api/upload', authenticate, upload.single('file'), (req, res) => {
-  if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-  res.json({ filePath: `/uploads/${req.file.filename}` });
+  if (!req.file) {
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
+  
+  const fileUrl = `/uploads/${req.file.filename}`;
+  console.log('📁 File uploaded:', fileUrl);
+  
+  res.json({ 
+    success: true, 
+    filePath: fileUrl,
+    filename: req.file.filename,
+    mimetype: req.file.mimetype
+  });
 });
 
+// Раздача статических файлов из папки uploads
 app.use('/uploads', express.static(UPLOADS_DIR));
 
 // ==================== SOCKET.IO ====================
@@ -433,6 +464,7 @@ io.on('connection', (socket) => {
     const { chatId, text, filePath } = data;
     const isMember = db.prepare('SELECT 1 FROM chat_members WHERE chat_id = ? AND user_id = ?').get(chatId, socket.userId);
     if (!isMember) return;
+    
     const stmt = db.prepare('INSERT INTO messages (chat_id, sender_id, text, file_path) VALUES (?, ?, ?, ?)');
     const info = stmt.run(chatId, socket.userId, text, filePath || null);
     const newMessage = db.prepare(`
@@ -441,6 +473,7 @@ io.on('connection', (socket) => {
       JOIN users u ON u.id = m.sender_id 
       WHERE m.id = ?
     `).get(info.lastInsertRowid);
+    
     io.to(`chat:${chatId}`).emit('new_message', newMessage);
   });
   
