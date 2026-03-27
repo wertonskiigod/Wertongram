@@ -2,14 +2,19 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>Wertongramm</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a0a2a 25%, #2a0a3a 50%, #1a0a2a 75%, #0a0a0a 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0a2a 20%, #2a0a3a 40%, #3a1a4a 60%, #2a0a3a 80%, #1a0a2a 100%);
             background-attachment: fixed;
             color: white;
             height: 100vh;
@@ -18,6 +23,18 @@
         }
         
         /* Анимированный градиентный фон */
+        @keyframes gradientFlow {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+        
         body::before {
             content: '';
             position: fixed;
@@ -25,17 +42,16 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle at 20% 30%, rgba(106, 42, 138, 0.3) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 70%, rgba(154, 74, 202, 0.3) 0%, transparent 50%),
-                        radial-gradient(circle at 40% 90%, rgba(74, 30, 102, 0.4) 0%, transparent 60%);
+            background: radial-gradient(circle at 30% 40%, rgba(106, 42, 138, 0.4) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 60%, rgba(154, 74, 202, 0.4) 0%, transparent 50%),
+                        radial-gradient(circle at 90% 20%, rgba(74, 30, 102, 0.3) 0%, transparent 60%);
             pointer-events: none;
-            animation: gradientPulse 8s ease-in-out infinite;
+            animation: gradientPulse 5s ease-in-out infinite;
         }
         
         @keyframes gradientPulse {
-            0% { opacity: 0.5; }
+            0%, 100% { opacity: 0.5; }
             50% { opacity: 1; }
-            100% { opacity: 0.5; }
         }
         
         /* Звёздный фон */
@@ -59,30 +75,77 @@
                 radial-gradient(3px 3px at 62% 88%, #fff, rgba(0,0,0,0));
             background-repeat: no-repeat;
             background-size: 200px 200px;
-            animation: starsFloat 30s linear infinite;
+            animation: starsFloat 40s linear infinite;
         }
         
         @keyframes starsFloat {
             0% { background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0; }
-            100% { background-position: 200px 200px, 150px 180px, 300px 250px, 400px 100px, 100px 300px, 250px 150px, 350px 280px, 50px 400px, 180px 320px, 420px 180px; }
+            100% { background-position: 300px 300px, 250px 280px, 400px 350px, 500px 200px, 200px 400px, 350px 250px, 450px 380px, 150px 500px, 280px 420px, 520px 280px; }
         }
         
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+        #app {
+            display: flex;
+            height: 100vh;
+            position: relative;
+            z-index: 1;
         }
         
-        #app { display: flex; height: 100vh; position: relative; z-index: 1; }
-        
-        /* Боковая панель */
+        /* Боковая панель (скрыта на телефоне по умолчанию) */
         .sidebar {
-            width: 320px;
-            background: rgba(10, 10, 10, 0.88);
-            backdrop-filter: blur(15px);
+            width: 85%;
+            max-width: 320px;
+            background: rgba(10, 10, 10, 0.92);
+            backdrop-filter: blur(20px);
             border-right: 1px solid rgba(154, 74, 202, 0.5);
             display: flex;
             flex-direction: column;
+            position: fixed;
+            left: -100%;
+            top: 0;
+            bottom: 0;
+            z-index: 100;
+            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 2px 0 20px rgba(0,0,0,0.5);
+        }
+        
+        .sidebar.open {
+            left: 0;
+        }
+        
+        /* Для планшетов и ПК */
+        @media (min-width: 768px) {
+            .sidebar {
+                position: relative;
+                left: 0;
+                width: 320px;
+            }
+            .menu-toggle {
+                display: none;
+            }
+        }
+        
+        .menu-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #9a4aca, #6a2a8a);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            cursor: pointer;
+            z-index: 101;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+        }
+        
+        .menu-toggle:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(154, 74, 202, 0.5);
         }
         
         .sidebar-header {
@@ -93,9 +156,8 @@
             transition: all 0.3s;
         }
         
-        .sidebar-header:hover { 
+        .sidebar-header:active {
             background: linear-gradient(135deg, rgba(42, 10, 58, 0.95), rgba(62, 10, 78, 0.95));
-            box-shadow: 0 0 20px rgba(154, 74, 202, 0.3);
         }
         
         .user-card {
@@ -104,7 +166,11 @@
             align-items: center;
         }
         
-        .user-info { display: flex; align-items: center; gap: 12px; }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
         
         .avatar {
             width: 48px;
@@ -115,22 +181,36 @@
             align-items: center;
             justify-content: center;
             font-size: 20px;
-            transition: all 0.3s;
+            transition: all 0.2s;
         }
         
-        .avatar:hover { transform: scale(1.05); box-shadow: 0 0 15px rgba(201, 110, 255, 0.8); }
+        .avatar:active {
+            transform: scale(0.95);
+        }
         
-        .username { font-weight: 600; font-size: 16px; }
-        .moons { font-size: 12px; color: #c96eff; }
+        .username {
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        .moons {
+            font-size: 12px;
+            color: #c96eff;
+        }
+        
         .logout-btn {
             background: none;
             border: none;
             color: #c96eff;
             font-size: 20px;
             cursor: pointer;
+            padding: 8px;
             transition: all 0.2s;
         }
-        .logout-btn:hover { transform: scale(1.1); color: #ff6b6b; }
+        
+        .logout-btn:active {
+            transform: scale(0.95);
+        }
         
         .search-area {
             padding: 12px;
@@ -153,7 +233,7 @@
         .search-input:focus {
             outline: none;
             border-color: #c96eff;
-            box-shadow: 0 0 10px rgba(201, 110, 255, 0.5);
+            box-shadow: 0 0 10px rgba(201, 110, 255, 0.3);
         }
         
         .search-btn {
@@ -164,12 +244,17 @@
             color: white;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.2s;
         }
         
-        .search-btn:hover { transform: scale(1.02); box-shadow: 0 0 15px rgba(154, 74, 202, 0.7); }
+        .search-btn:active {
+            transform: scale(0.95);
+        }
         
-        .chats-list { flex: 1; overflow-y: auto; }
+        .chats-list {
+            flex: 1;
+            overflow-y: auto;
+        }
         
         .chat-item {
             padding: 12px 16px;
@@ -181,8 +266,11 @@
             border-left: 3px solid transparent;
         }
         
-        .chat-item:hover { background: rgba(154, 74, 202, 0.2); }
-        .chat-item.active { 
+        .chat-item:active {
+            background: rgba(154, 74, 202, 0.3);
+        }
+        
+        .chat-item.active {
             background: linear-gradient(90deg, rgba(154, 74, 202, 0.3), transparent);
             border-left-color: #c96eff;
         }
@@ -198,14 +286,16 @@
             font-size: 20px;
         }
         
-        .chat-name { font-weight: 500; }
+        .chat-name {
+            font-weight: 500;
+        }
         
         .chat-area {
             flex: 1;
             display: flex;
             flex-direction: column;
             background: rgba(10, 10, 10, 0.75);
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(10px);
         }
         
         .chat-header {
@@ -226,7 +316,7 @@
         }
         
         .message {
-            max-width: 70%;
+            max-width: 85%;
             padding: 8px 12px;
             border-radius: 18px;
             position: relative;
@@ -259,17 +349,29 @@
             color: #c96eff;
         }
         
-        .message-sender:hover { text-decoration: underline; }
-        .message-text { margin-bottom: 4px; line-height: 1.4; word-break: break-word; }
+        .message-sender:active {
+            opacity: 0.7;
+        }
+        
+        .message-text {
+            margin-bottom: 4px;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+        
         .message-image {
-            max-width: 250px;
-            max-height: 250px;
+            max-width: 200px;
+            max-height: 200px;
             border-radius: 12px;
             margin-top: 4px;
             cursor: pointer;
             transition: transform 0.2s;
         }
-        .message-image:hover { transform: scale(1.02); }
+        
+        .message-image:active {
+            transform: scale(0.98);
+        }
+        
         .message-file {
             display: inline-block;
             padding: 4px 8px;
@@ -279,6 +381,7 @@
             color: #c96eff;
             margin-top: 4px;
         }
+        
         .message-meta {
             font-size: 10px;
             opacity: 0.6;
@@ -291,17 +394,19 @@
             gap: 12px;
             justify-content: flex-end;
             margin-top: 6px;
-            opacity: 0;
-            transition: opacity 0.2s;
         }
         
-        .message:hover .message-actions { opacity: 1; }
         .message-actions button {
             background: none;
             border: none;
             color: #c96eff;
             font-size: 11px;
             cursor: pointer;
+            padding: 4px;
+        }
+        
+        .message-actions button:active {
+            opacity: 0.7;
         }
         
         .input-area {
@@ -336,15 +441,26 @@
             background: linear-gradient(135deg, #9a4aca, #6a2a8a);
             border: none;
             border-radius: 30px;
-            padding: 10px 18px;
+            padding: 10px 16px;
             color: white;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.2s;
+            min-width: 44px;
+            min-height: 44px;
         }
         
-        .input-area button:hover { transform: scale(1.05); box-shadow: 0 0 10px rgba(154, 74, 202, 0.5); }
-        .attach-btn, .gift-btn { background: rgba(154, 74, 202, 0.6) !important; }
-        .gift-btn { background: linear-gradient(135deg, #ff9800, #ff5722) !important; }
+        .input-area button:active {
+            transform: scale(0.95);
+        }
+        
+        .attach-btn, .gift-btn {
+            background: rgba(154, 74, 202, 0.6) !important;
+        }
+        
+        .gift-btn {
+            background: linear-gradient(135deg, #ff9800, #ff5722) !important;
+        }
+        
         .typing-indicator {
             font-size: 12px;
             color: #c96eff;
@@ -363,12 +479,13 @@
             justify-content: center;
             align-items: center;
             z-index: 1000;
+            backdrop-filter: blur(5px);
         }
         
         .profile-modal {
             background: linear-gradient(135deg, #1a0a2a, #2a0a3a);
             border-radius: 28px;
-            width: 340px;
+            width: 320px;
             max-width: 90%;
             overflow: hidden;
             border: 1px solid rgba(154, 74, 202, 0.6);
@@ -378,7 +495,7 @@
         .profile-cover {
             background: linear-gradient(135deg, #9a4aca, #6a2a8a, #9a4aca);
             background-size: 200% 200%;
-            animation: gradientShift 8s ease infinite;
+            animation: gradientFlow 8s ease infinite;
             height: 100px;
             position: relative;
         }
@@ -441,9 +558,20 @@
             border-radius: 20px;
         }
         
-        .stat { text-align: center; }
-        .stat-value { font-size: 20px; font-weight: bold; color: #c96eff; }
-        .stat-label { font-size: 12px; color: #8e8e8e; }
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #c96eff;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #8e8e8e;
+        }
         
         .profile-btn {
             width: 100%;
@@ -455,11 +583,16 @@
             font-weight: bold;
             cursor: pointer;
             margin-top: 8px;
-            transition: all 0.3s;
+            transition: all 0.2s;
         }
         
-        .profile-btn:hover { transform: scale(1.02); box-shadow: 0 0 15px rgba(154, 74, 202, 0.5); }
-        .profile-btn.secondary { background: rgba(154, 74, 202, 0.6); }
+        .profile-btn:active {
+            transform: scale(0.98);
+        }
+        
+        .profile-btn.secondary {
+            background: rgba(154, 74, 202, 0.6);
+        }
         
         .gift-modal {
             background: linear-gradient(135deg, #1a0a2a, #2a0a3a);
@@ -482,36 +615,60 @@
             transition: all 0.2s;
         }
         
-        .gift-item:hover { background: rgba(154, 74, 202, 0.3); border-radius: 12px; }
-        .gift-info { display: flex; gap: 12px; align-items: center; }
-        .gift-icon { font-size: 32px; }
-        .gift-price { color: #ff9800; font-size: 12px; }
+        .gift-item:active {
+            background: rgba(154, 74, 202, 0.3);
+            border-radius: 12px;
+        }
+        
+        .gift-info {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .gift-icon {
+            font-size: 32px;
+        }
+        
+        .gift-price {
+            color: #ff9800;
+            font-size: 12px;
+        }
         
         .convert-btn {
             background: linear-gradient(135deg, #ff9800, #ff5722);
             border: none;
             border-radius: 20px;
-            padding: 6px 12px;
+            padding: 8px 12px;
             color: white;
             cursor: pointer;
             font-size: 12px;
             transition: all 0.2s;
         }
-        .convert-btn:hover { transform: scale(1.05); }
         
-        .admin-panel { margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(154, 74, 202, 0.5); }
+        .convert-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .admin-panel {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(154, 74, 202, 0.5);
+        }
+        
         .admin-input {
             width: 100%;
-            padding: 8px;
+            padding: 10px;
             margin: 8px 0;
             background: rgba(26, 10, 42, 0.8);
             border: 1px solid rgba(154, 74, 202, 0.5);
             border-radius: 12px;
             color: white;
         }
+        
         .admin-button, .close-button {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             margin-top: 8px;
             background: linear-gradient(135deg, #9a4aca, #6a2a8a);
             border: none;
@@ -519,39 +676,45 @@
             color: white;
             cursor: pointer;
         }
-        .close-button { background: rgba(154, 74, 202, 0.6); }
+        
+        .close-button {
+            background: rgba(154, 74, 202, 0.6);
+        }
         
         #auth {
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background: linear-gradient(135deg, #0a0a0a, #1a0a2a, #2a0a3a, #1a0a2a, #0a0a0a);
+            background: linear-gradient(135deg, #0a0a0a, #1a0a2a, #2a0a3a, #3a1a4a, #2a0a3a, #1a0a2a);
             background-size: 400% 400%;
-            animation: gradientShift 15s ease infinite;
+            animation: gradientFlow 12s ease infinite;
             position: relative;
             z-index: 1;
         }
         
         .auth-card {
             background: linear-gradient(135deg, rgba(26, 10, 42, 0.95), rgba(42, 10, 58, 0.95));
-            padding: 32px;
+            padding: 28px;
             border-radius: 28px;
             width: 320px;
+            max-width: 90%;
             border: 1px solid rgba(154, 74, 202, 0.6);
             backdrop-filter: blur(10px);
             box-shadow: 0 0 30px rgba(154, 74, 202, 0.2);
         }
         
-        .auth-card h2 { 
-            text-align: center; 
-            margin-bottom: 24px; 
+        .auth-card h2 {
+            text-align: center;
+            margin-bottom: 24px;
             background: linear-gradient(135deg, #c96eff, #9a4aca, #c96eff);
             background-size: 200% 200%;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            animation: gradientShift 3s ease infinite;
+            animation: gradientFlow 3s ease infinite;
+            font-size: 28px;
         }
+        
         .auth-card input, .auth-card textarea {
             width: 100%;
             padding: 12px;
@@ -560,13 +723,16 @@
             border: 1px solid rgba(154, 74, 202, 0.5);
             border-radius: 20px;
             color: white;
+            font-size: 16px;
             transition: all 0.2s;
         }
+        
         .auth-card input:focus, .auth-card textarea:focus {
             outline: none;
             border-color: #c96eff;
             box-shadow: 0 0 10px rgba(201, 110, 255, 0.3);
         }
+        
         .auth-card button {
             width: 100%;
             padding: 12px;
@@ -577,31 +743,32 @@
             color: white;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s;
+            font-size: 16px;
+            transition: all 0.2s;
         }
-        .auth-card button:hover { transform: scale(1.02); box-shadow: 0 0 15px rgba(154, 74, 202, 0.5); }
-        .auth-buttons { display: flex; gap: 10px; margin-top: 16px; }
-        .auth-buttons button { flex: 1; }
-        textarea { font-family: inherit; resize: none; }
+        
+        .auth-card button:active {
+            transform: scale(0.98);
+        }
+        
+        .auth-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+        
+        .auth-buttons button {
+            flex: 1;
+        }
+        
+        textarea {
+            font-family: inherit;
+            resize: none;
+        }
         
         .error-input {
             border-color: #ff4444 !important;
             box-shadow: 0 0 10px rgba(255, 68, 68, 0.3);
-        }
-        
-        /* Стили для изображений в сообщениях */
-        .message-image {
-            max-width: 250px;
-            max-height: 250px;
-            border-radius: 12px;
-            margin-top: 4px;
-            cursor: pointer;
-            transition: transform 0.2s;
-            border: 1px solid rgba(154, 74, 202, 0.3);
-        }
-        .message-image:hover {
-            transform: scale(1.02);
-            box-shadow: 0 0 15px rgba(154, 74, 202, 0.5);
         }
         
         .file-attachment {
@@ -614,11 +781,20 @@
             text-decoration: none;
             color: #c96eff;
             margin-top: 8px;
-            transition: all 0.2s;
         }
-        .file-attachment:hover {
-            background: rgba(255,255,255,0.2);
-            transform: scale(1.02);
+        
+        /* Стили для скролла */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #9a4aca;
+            border-radius: 4px;
         }
     </style>
 </head>
@@ -639,7 +815,7 @@
 </div>
 
 <div id="app" style="display: none;">
-    <div class="sidebar">
+    <div class="sidebar" id="sidebar">
         <div class="sidebar-header" id="profileBtn">
             <div class="user-card">
                 <div class="user-info">
@@ -674,6 +850,8 @@
         </div>
     </div>
 </div>
+
+<div class="menu-toggle" id="menuToggle">☰</div>
 
 <!-- Модальное окно профиля -->
 <div id="profileModal" class="modal">
@@ -737,6 +915,8 @@ let allGifts = [];
 // DOM элементы
 const authDiv = document.getElementById('auth');
 const appDiv = document.getElementById('app');
+const sidebar = document.getElementById('sidebar');
+const menuToggle = document.getElementById('menuToggle');
 const chatsContainer = document.getElementById('chatsContainer');
 const messagesContainer = document.getElementById('messagesContainer');
 const chatHeaderName = document.getElementById('chatHeaderName');
@@ -777,6 +957,20 @@ let isViewingOwnProfile = false;
 function getToken() { return localStorage.getItem('token'); }
 function setToken(t) { localStorage.setItem('token', t); }
 function clearToken() { localStorage.removeItem('token'); }
+
+// Меню для телефона
+menuToggle.onclick = () => {
+    sidebar.classList.toggle('open');
+};
+
+// Закрытие меню при клике вне его на телефоне
+document.addEventListener('click', (e) => {
+    if (window.innerWidth < 768) {
+        if (!sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
+            sidebar.classList.remove('open');
+        }
+    }
+});
 
 function validatePhone(phone) {
     const phoneRegex = /^[0-9]{10,15}$/;
@@ -895,7 +1089,10 @@ function renderChatList(chats) {
         div.dataset.chatId = chat.id;
         div.innerHTML = `<div class="chat-avatar">${avatar}</div>
                          <div class="chat-name">${escapeHtml(title)}</div>`;
-        div.onclick = () => openChat(chat.id);
+        div.onclick = () => {
+            openChat(chat.id);
+            if (window.innerWidth < 768) sidebar.classList.remove('open');
+        };
         chatsContainer.appendChild(div);
     }
 }
@@ -1163,6 +1360,7 @@ searchBtn.onclick = async () => {
             await loadChats();
             await openChat(chat.id);
             searchPhone.value = '';
+            if (window.innerWidth < 768) sidebar.classList.remove('open');
         } else alert('Ошибка создания чата');
     } catch (error) { alert('Ошибка соединения'); }
 };
