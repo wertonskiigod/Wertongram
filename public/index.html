@@ -22,17 +22,10 @@
             position: relative;
         }
         
-        /* Анимированный градиентный фон */
         @keyframes gradientFlow {
-            0% {
-                background-position: 0% 50%;
-            }
-            50% {
-                background-position: 100% 50%;
-            }
-            100% {
-                background-position: 0% 50%;
-            }
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
         
         body::before {
@@ -54,7 +47,6 @@
             50% { opacity: 1; }
         }
         
-        /* Звёздный фон */
         .stars {
             position: fixed;
             top: 0;
@@ -90,7 +82,6 @@
             z-index: 1;
         }
         
-        /* Боковая панель (скрыта на телефоне по умолчанию) */
         .sidebar {
             width: 85%;
             max-width: 320px;
@@ -108,20 +99,15 @@
             box-shadow: 2px 0 20px rgba(0,0,0,0.5);
         }
         
-        .sidebar.open {
-            left: 0;
-        }
+        .sidebar.open { left: 0; }
         
-        /* Для планшетов и ПК */
         @media (min-width: 768px) {
             .sidebar {
                 position: relative;
                 left: 0;
                 width: 320px;
             }
-            .menu-toggle {
-                display: none;
-            }
+            .menu-toggle { display: none; }
         }
         
         .menu-toggle {
@@ -143,20 +129,12 @@
             transition: all 0.3s;
         }
         
-        .menu-toggle:active {
-            transform: scale(0.95);
-        }
+        .menu-toggle:active { transform: scale(0.95); }
         
         .sidebar-header {
             padding: 16px;
             background: linear-gradient(135deg, rgba(26, 10, 42, 0.95), rgba(42, 10, 58, 0.95));
             border-bottom: 1px solid rgba(154, 74, 202, 0.6);
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .sidebar-header:active {
-            background: linear-gradient(135deg, rgba(42, 10, 58, 0.95), rgba(62, 10, 78, 0.95));
         }
         
         .user-card {
@@ -169,6 +147,7 @@
             display: flex;
             align-items: center;
             gap: 12px;
+            cursor: pointer;
         }
         
         .avatar {
@@ -181,21 +160,20 @@
             justify-content: center;
             font-size: 20px;
             transition: all 0.2s;
+            object-fit: cover;
         }
         
-        .avatar:active {
-            transform: scale(0.95);
+        .avatar-img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
         }
         
-        .username {
-            font-weight: 600;
-            font-size: 16px;
-        }
+        .avatar:active { transform: scale(0.95); }
         
-        .moons {
-            font-size: 12px;
-            color: #c96eff;
-        }
+        .username { font-weight: 600; font-size: 16px; }
+        .moons { font-size: 12px; color: #c96eff; }
         
         .logout-btn {
             background: none;
@@ -204,12 +182,9 @@
             font-size: 20px;
             cursor: pointer;
             padding: 8px;
-            transition: all 0.2s;
         }
         
-        .logout-btn:active {
-            transform: scale(0.95);
-        }
+        .logout-btn:active { transform: scale(0.95); }
         
         .search-area {
             padding: 12px;
@@ -226,7 +201,6 @@
             border-radius: 24px;
             color: white;
             font-size: 14px;
-            transition: all 0.2s;
         }
         
         .search-input:focus {
@@ -243,17 +217,11 @@
             color: white;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.2s;
         }
         
-        .search-btn:active {
-            transform: scale(0.95);
-        }
+        .search-btn:active { transform: scale(0.95); }
         
-        .chats-list {
-            flex: 1;
-            overflow-y: auto;
-        }
+        .chats-list { flex: 1; overflow-y: auto; }
         
         .chat-item {
             padding: 12px 16px;
@@ -265,10 +233,7 @@
             border-left: 3px solid transparent;
         }
         
-        .chat-item:active {
-            background: rgba(154, 74, 202, 0.3);
-        }
-        
+        .chat-item:active { background: rgba(154, 74, 202, 0.3); }
         .chat-item.active {
             background: linear-gradient(90deg, rgba(154, 74, 202, 0.3), transparent);
             border-left-color: #c96eff;
@@ -283,11 +248,17 @@
             align-items: center;
             justify-content: center;
             font-size: 20px;
+            object-fit: cover;
         }
         
-        .chat-name {
-            font-weight: 500;
+        .chat-avatar-img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
         }
+        
+        .chat-name { font-weight: 500; }
         
         .chat-area {
             flex: 1;
@@ -348,9 +319,7 @@
             color: #c96eff;
         }
         
-        .message-sender:active {
-            opacity: 0.7;
-        }
+        .message-sender:active { opacity: 0.7; }
         
         .message-text {
             margin-bottom: 4px;
@@ -364,20 +333,15 @@
             border-radius: 12px;
             margin-top: 4px;
             cursor: pointer;
-            transition: transform 0.2s;
-            border: 1px solid rgba(154, 74, 202, 0.3);
         }
         
-        .message-image:active {
-            transform: scale(0.98);
-        }
+        .message-image:active { transform: scale(0.98); }
         
         .message-video {
             max-width: 220px;
             max-height: 220px;
             border-radius: 12px;
             margin-top: 4px;
-            cursor: pointer;
         }
         
         .file-attachment {
@@ -390,11 +354,6 @@
             text-decoration: none;
             color: #c96eff;
             margin-top: 4px;
-            transition: all 0.2s;
-        }
-        
-        .file-attachment:active {
-            background: rgba(255,255,255,0.2);
         }
         
         .message-meta {
@@ -420,10 +379,6 @@
             padding: 4px;
         }
         
-        .message-actions button:active {
-            opacity: 0.7;
-        }
-        
         .input-area {
             padding: 12px 16px;
             background: linear-gradient(135deg, rgba(26, 10, 42, 0.9), rgba(42, 10, 58, 0.9));
@@ -443,7 +398,6 @@
             font-size: 15px;
             resize: none;
             font-family: inherit;
-            transition: all 0.2s;
         }
         
         #messageInput:focus {
@@ -459,22 +413,14 @@
             padding: 10px 16px;
             color: white;
             cursor: pointer;
-            transition: all 0.2s;
             min-width: 44px;
             min-height: 44px;
         }
         
-        .input-area button:active {
-            transform: scale(0.95);
-        }
+        .input-area button:active { transform: scale(0.95); }
         
-        .attach-btn, .gift-btn {
-            background: rgba(154, 74, 202, 0.6) !important;
-        }
-        
-        .gift-btn {
-            background: linear-gradient(135deg, #ff9800, #ff5722) !important;
-        }
+        .attach-btn, .gift-btn { background: rgba(154, 74, 202, 0.6) !important; }
+        .gift-btn { background: linear-gradient(135deg, #ff9800, #ff5722) !important; }
         
         .typing-indicator {
             font-size: 12px;
@@ -529,6 +475,14 @@
             justify-content: center;
             font-size: 40px;
             border: 4px solid #2a0a3a;
+            cursor: pointer;
+            overflow: hidden;
+        }
+        
+        .profile-avatar-large img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
         
         .profile-info {
@@ -536,23 +490,9 @@
             text-align: center;
         }
         
-        .profile-name {
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-        
-        .profile-user-id {
-            font-size: 12px;
-            color: #c96eff;
-            margin-bottom: 8px;
-        }
-        
-        .profile-username {
-            font-size: 14px;
-            color: #c96eff;
-            margin-bottom: 12px;
-        }
+        .profile-name { font-size: 24px; font-weight: 600; margin-bottom: 4px; }
+        .profile-user-id { font-size: 12px; color: #c96eff; margin-bottom: 8px; }
+        .profile-username { font-size: 14px; color: #c96eff; margin-bottom: 12px; }
         
         .profile-bio {
             font-size: 14px;
@@ -573,20 +513,9 @@
             border-radius: 20px;
         }
         
-        .stat {
-            text-align: center;
-        }
-        
-        .stat-value {
-            font-size: 20px;
-            font-weight: bold;
-            color: #c96eff;
-        }
-        
-        .stat-label {
-            font-size: 12px;
-            color: #8e8e8e;
-        }
+        .stat { text-align: center; }
+        .stat-value { font-size: 20px; font-weight: bold; color: #c96eff; }
+        .stat-label { font-size: 12px; color: #8e8e8e; }
         
         .profile-btn {
             width: 100%;
@@ -598,16 +527,10 @@
             font-weight: bold;
             cursor: pointer;
             margin-top: 8px;
-            transition: all 0.2s;
         }
         
-        .profile-btn:active {
-            transform: scale(0.98);
-        }
-        
-        .profile-btn.secondary {
-            background: rgba(154, 74, 202, 0.6);
-        }
+        .profile-btn:active { transform: scale(0.98); }
+        .profile-btn.secondary { background: rgba(154, 74, 202, 0.6); }
         
         .gift-modal {
             background: linear-gradient(135deg, #1a0a2a, #2a0a3a);
@@ -627,28 +550,13 @@
             padding: 12px;
             border-bottom: 1px solid rgba(154, 74, 202, 0.3);
             cursor: pointer;
-            transition: all 0.2s;
         }
         
-        .gift-item:active {
-            background: rgba(154, 74, 202, 0.3);
-            border-radius: 12px;
-        }
+        .gift-item:active { background: rgba(154, 74, 202, 0.3); border-radius: 12px; }
         
-        .gift-info {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-        
-        .gift-icon {
-            font-size: 32px;
-        }
-        
-        .gift-price {
-            color: #ff9800;
-            font-size: 12px;
-        }
+        .gift-info { display: flex; gap: 12px; align-items: center; }
+        .gift-icon { font-size: 32px; }
+        .gift-price { color: #ff9800; font-size: 12px; }
         
         .convert-btn {
             background: linear-gradient(135deg, #ff9800, #ff5722);
@@ -658,12 +566,9 @@
             color: white;
             cursor: pointer;
             font-size: 12px;
-            transition: all 0.2s;
         }
         
-        .convert-btn:active {
-            transform: scale(0.95);
-        }
+        .convert-btn:active { transform: scale(0.95); }
         
         .admin-panel {
             margin-top: 16px;
@@ -692,9 +597,7 @@
             cursor: pointer;
         }
         
-        .close-button {
-            background: rgba(154, 74, 202, 0.6);
-        }
+        .close-button { background: rgba(154, 74, 202, 0.6); }
         
         #auth {
             display: flex;
@@ -739,7 +642,6 @@
             border-radius: 20px;
             color: white;
             font-size: 16px;
-            transition: all 0.2s;
         }
         
         .auth-card input:focus, .auth-card textarea:focus {
@@ -759,45 +661,43 @@
             font-weight: bold;
             cursor: pointer;
             font-size: 16px;
-            transition: all 0.2s;
         }
         
-        .auth-card button:active {
-            transform: scale(0.98);
-        }
+        .auth-card button:active { transform: scale(0.98); }
         
-        .auth-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 16px;
-        }
+        .auth-buttons { display: flex; gap: 10px; margin-top: 16px; }
+        .auth-buttons button { flex: 1; }
         
-        .auth-buttons button {
-            flex: 1;
-        }
-        
-        textarea {
-            font-family: inherit;
-            resize: none;
-        }
+        textarea { font-family: inherit; resize: none; }
         
         .error-input {
             border-color: #ff4444 !important;
             box-shadow: 0 0 10px rgba(255, 68, 68, 0.3);
         }
         
-        /* Стили для скролла */
-        ::-webkit-scrollbar {
-            width: 4px;
-        }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
+        ::-webkit-scrollbar-thumb { background: #9a4aca; border-radius: 4px; }
         
-        ::-webkit-scrollbar-track {
-            background: rgba(255,255,255,0.05);
-        }
-        
-        ::-webkit-scrollbar-thumb {
+        .avatar-upload-btn {
+            position: absolute;
+            bottom: 0;
+            right: 0;
             background: #9a4aca;
-            border-radius: 4px;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            cursor: pointer;
+            border: 2px solid #1a0a2a;
+        }
+        
+        .avatar-wrapper {
+            position: relative;
+            display: inline-block;
         }
     </style>
 </head>
@@ -819,9 +719,9 @@
 
 <div id="app" style="display: none;">
     <div class="sidebar" id="sidebar">
-        <div class="sidebar-header" id="profileBtn">
+        <div class="sidebar-header">
             <div class="user-card">
-                <div class="user-info">
+                <div class="user-info" id="profileBtn">
                     <div class="avatar" id="currentAvatar">👤</div>
                     <div>
                         <div class="username" id="currentUsername"></div>
@@ -860,7 +760,9 @@
 <div id="profileModal" class="modal">
     <div class="profile-modal">
         <div class="profile-cover">
-            <div class="profile-avatar-large" id="profileAvatarLarge">👤</div>
+            <div class="profile-avatar-large" id="profileAvatarLarge">
+                <div id="profileAvatarContent">👤</div>
+            </div>
         </div>
         <div class="profile-info">
             <div class="profile-name" id="profileName"></div>
@@ -879,7 +781,9 @@
             </div>
             <button id="profileGiftsBtn" class="profile-btn">🎁 Мои подарки</button>
             <button id="profileMessageBtn" class="profile-btn">💬 Написать сообщение</button>
+            <button id="uploadAvatarBtn" class="profile-btn secondary">📷 Сменить аватар</button>
             <button id="closeProfileBtn" class="profile-btn secondary">Закрыть</button>
+            <input type="file" id="avatarInput" style="display: none;" accept="image/*">
         </div>
     </div>
 </div>
@@ -940,6 +844,7 @@ const giftsList = document.getElementById('giftsList');
 const adminPanel = document.getElementById('adminPanel');
 const profileModal = document.getElementById('profileModal');
 const profileAvatarLarge = document.getElementById('profileAvatarLarge');
+const profileAvatarContent = document.getElementById('profileAvatarContent');
 const profileName = document.getElementById('profileName');
 const profileUserId = document.getElementById('profileUserId');
 const profileUsername = document.getElementById('profileUsername');
@@ -948,11 +853,13 @@ const profileMoons = document.getElementById('profileMoons');
 const profileGiftsCount = document.getElementById('profileGiftsCount');
 const profileMessageBtn = document.getElementById('profileMessageBtn');
 const profileGiftsBtn = document.getElementById('profileGiftsBtn');
+const uploadAvatarBtn = document.getElementById('uploadAvatarBtn');
 const closeProfileBtn = document.getElementById('closeProfileBtn');
 const profileBtn = document.getElementById('profileBtn');
 const userGiftsModal = document.getElementById('userGiftsModal');
 const userGiftsList = document.getElementById('userGiftsList');
 const closeUserGiftsBtn = document.getElementById('closeUserGiftsBtn');
+const avatarInput = document.getElementById('avatarInput');
 
 let selectedUserId = null;
 let isViewingOwnProfile = false;
@@ -962,11 +869,8 @@ function setToken(t) { localStorage.setItem('token', t); }
 function clearToken() { localStorage.removeItem('token'); }
 
 // Меню для телефона
-menuToggle.onclick = () => {
-    sidebar.classList.toggle('open');
-};
+menuToggle.onclick = () => { sidebar.classList.toggle('open'); };
 
-// Закрытие меню при клике вне его на телефоне
 document.addEventListener('click', (e) => {
     if (window.innerWidth < 768) {
         if (!sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
@@ -976,11 +880,9 @@ document.addEventListener('click', (e) => {
 });
 
 function validatePhone(phone) {
-    const phoneRegex = /^[0-9]{10,15}$/;
-    return phoneRegex.test(phone);
+    return /^[0-9]{10,15}$/.test(phone);
 }
 
-// Функция для определения типа файла по расширению
 function getFileTypeFromPath(filePath) {
     if (!filePath) return null;
     const ext = filePath.split('.').pop().toLowerCase();
@@ -989,19 +891,27 @@ function getFileTypeFromPath(filePath) {
     return 'file';
 }
 
-// Функция для отображения файла в сообщении
 function renderFileAttachment(filePath, fileType) {
     if (!filePath) return '';
-    
     const type = fileType || getFileTypeFromPath(filePath);
     const filename = filePath.split('/').pop();
-    
     if (type === 'image') {
         return `<div><img src="${filePath}" class="message-image" onclick="window.open('${filePath}', '_blank')" loading="lazy"></div>`;
     } else if (type === 'video') {
         return `<div><video src="${filePath}" controls class="message-video" style="max-width: 220px; max-height: 220px; border-radius: 12px; margin-top: 4px;" preload="metadata"></video></div>`;
     } else {
         return `<div><a href="${filePath}" target="_blank" class="file-attachment" download>📎 ${escapeHtml(filename)}</a></div>`;
+    }
+}
+
+function updateAvatarDisplay(avatarUrl) {
+    if (avatarUrl) {
+        currentAvatar.innerHTML = `<img src="${avatarUrl}" class="avatar-img" style="width:100%;height:100%;object-fit:cover;">`;
+        profileAvatarContent.innerHTML = `<img src="${avatarUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+    } else {
+        const initial = (currentUser?.username || 'U')[0].toUpperCase();
+        currentAvatar.innerHTML = initial;
+        profileAvatarContent.innerHTML = initial;
     }
 }
 
@@ -1076,9 +986,9 @@ async function loadUserInfo() {
     if (res.ok) {
         const user = await res.json();
         currentUser = { ...currentUser, ...user };
-        currentAvatar.textContent = (user.username || user.phone)[0].toUpperCase();
         currentUsername.textContent = user.username || user.phone;
         moonsCount.textContent = user.moons;
+        updateAvatarDisplay(user.avatar);
         if (user.is_admin) adminPanel.style.display = 'block';
     }
 }
@@ -1109,8 +1019,8 @@ function renderChatList(chats) {
             const other = chat.members.find(m => m.userId != currentUser.id);
             title = other ? other.username || other.userId : 'Unknown';
             avatar = (title[0] || '💬').toUpperCase();
-        } else if (chat.title === 'Новички') {
-            avatar = '👋';
+        } else if (chat.title === 'ИП Издаболы') {
+            avatar = '📚';
         }
         const div = document.createElement('div');
         div.className = 'chat-item';
@@ -1199,17 +1109,23 @@ async function showUserProfile(userId) {
         selectedUserId = user.id;
         isViewingOwnProfile = (userId === currentUser.id);
         
-        profileAvatarLarge.textContent = (user.username || 'U')[0].toUpperCase();
         profileName.textContent = user.username || `User ${user.id}`;
         profileUserId.textContent = `🆔 ID: ${user.id}`;
         profileUsername.textContent = `@${user.username || user.id}`;
         profileBio.textContent = user.bio || 'Нет информации о себе';
         profileMoons.textContent = user.moons;
         
+        if (user.avatar) {
+            profileAvatarContent.innerHTML = `<img src="${user.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+        } else {
+            profileAvatarContent.textContent = (user.username || 'U')[0].toUpperCase();
+        }
+        
         const gifts = await loadUserGifts(user.id);
         profileGiftsCount.textContent = gifts.length;
         
         profileMessageBtn.style.display = isViewingOwnProfile ? 'none' : 'block';
+        uploadAvatarBtn.style.display = isViewingOwnProfile ? 'block' : 'none';
         profileGiftsBtn.textContent = isViewingOwnProfile ? '🎁 Мои подарки' : '🎁 Подарки пользователя';
         
         profileModal.style.display = 'flex';
@@ -1217,6 +1133,37 @@ async function showUserProfile(userId) {
 }
 
 profileBtn.onclick = () => showUserProfile(currentUser.id);
+
+// Загрузка аватарки
+uploadAvatarBtn.onclick = () => avatarInput.click();
+
+avatarInput.onchange = async () => {
+    const file = avatarInput.files[0];
+    if (!file) return;
+    
+    const formData = new FormData();
+    formData.append('avatar', file);
+    
+    try {
+        const res = await fetch('/api/upload-avatar', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getToken()}` },
+            body: formData
+        });
+        const data = await res.json();
+        if (res.ok && data.avatarUrl) {
+            updateAvatarDisplay(data.avatarUrl);
+            alert('✅ Аватар успешно обновлён!');
+            profileModal.style.display = 'none';
+        } else {
+            alert('Ошибка загрузки аватарки');
+        }
+    } catch (error) {
+        console.error('Avatar upload error:', error);
+        alert('Ошибка соединения');
+    }
+    avatarInput.value = '';
+};
 
 profileGiftsBtn.onclick = async () => {
     const userId = isViewingOwnProfile ? currentUser.id : selectedUserId;
@@ -1307,31 +1254,18 @@ attachBtn.onclick = () => fileInput.click();
 fileInput.onchange = async () => {
     const file = fileInput.files[0];
     if (!file) return;
-    
-    // Проверка размера файла (50 MB для видео)
     if (file.size > 50 * 1024 * 1024) {
         alert('Файл слишком большой! Максимум 50 MB');
         fileInput.value = '';
         return;
     }
-    
     const formData = new FormData();
     formData.append('file', file);
-    
     try {
-        const res = await fetch('/api/upload', { 
-            method: 'POST', 
-            headers: { 'Authorization': `Bearer ${getToken()}` }, 
-            body: formData 
-        });
+        const res = await fetch('/api/upload', { method: 'POST', headers: { 'Authorization': `Bearer ${getToken()}` }, body: formData });
         const data = await res.json();
         if (res.ok && data.filePath) {
-            socket.emit('send_message', { 
-                chatId: currentChatId, 
-                text: '', 
-                filePath: data.filePath,
-                fileType: data.fileType 
-            });
+            socket.emit('send_message', { chatId: currentChatId, text: '', filePath: data.filePath, fileType: data.fileType });
         } else {
             alert('Ошибка загрузки файла: ' + (data.error || 'неизвестная ошибка'));
         }
@@ -1357,18 +1291,10 @@ giftBtn.onclick = () => {
 
 async function sendGift(giftId) {
     const token = getToken();
-    const res = await fetch('/api/send-gift', { 
-        method: 'POST', 
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }, 
-        body: JSON.stringify({ giftId, chatId: currentChatId }) 
-    });
+    const res = await fetch('/api/send-gift', { method: 'POST', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ giftId, chatId: currentChatId }) });
     const data = await res.json();
-    if (res.ok) { 
-        giftModal.style.display = 'none'; 
-        await loadUserInfo();
-    } else {
-        alert(data.error || 'Ошибка при отправке подарка');
-    }
+    if (res.ok) { giftModal.style.display = 'none'; await loadUserInfo(); }
+    else alert(data.error || 'Ошибка при отправке подарка');
 }
 
 searchBtn.onclick = async () => {
@@ -1474,21 +1400,14 @@ function connectSocket() {
     const token = getToken();
     if (token) {
         try {
-            const res = await fetch('/api/me', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            const res = await fetch('/api/me', { headers: { 'Authorization': `Bearer ${token}` } });
             if (res.ok) {
                 const user = await res.json();
                 currentUser = { id: user.id, is_admin: user.is_admin };
                 initApp();
                 return;
-            } else {
-                clearToken();
-            }
-        } catch (e) {
-            console.error('Session check failed:', e);
-            clearToken();
-        }
+            } else { clearToken(); }
+        } catch (e) { clearToken(); }
     }
     authDiv.style.display = 'flex';
     appDiv.style.display = 'none';
