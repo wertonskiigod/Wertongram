@@ -11,7 +11,7 @@ const Database = require('better-sqlite3');
 const db = new Database('wertongramm.db');
 db.pragma('foreign_keys = ON');
 
-// Обновлённые таблицы с валютой и подарками
+// Создание таблиц
 db.exec(`
   CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -33,6 +33,7 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS chat_members (
     chat_id INTEGER NOT NULL,
     user_id INTEGER NOT NULL,
+    role TEXT DEFAULT 'member',
     PRIMARY KEY (chat_id, user_id),
     FOREIGN KEY (chat_id) REFERENCES chats(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -91,6 +92,35 @@ if (giftCount === 0) {
   for (const gift of giftsList) {
     insert.run(gift.name, gift.description, gift.price, gift.icon);
   }
+  console.log('✅ Добавлены стандартные подарки');
+}
+
+// Создаём системный канал "Новички" если его нет
+const channelExists = db.prepare('SELECT id FROM chats WHERE title = ? AND type = ?').get('Новички', 'group');
+let newbiesChannelId;
+if (!channelExists) {
+  const insertChannel = db.prepare('INSERT INTO chats (type, title) VALUES (?, ?)');
+  const info = insertChannel.run('group', 'Новички');
+  newbiesChannelId = info.lastInsertRowid;
+  console.log('✅ Создан канал "Новички" с ID:', newbiesChannelId);
+} else {
+  newbiesChannelId = channelExists.id;
+  console.log('✅ Канал "Новички" уже существует, ID:', newbiesChannelId);
+}
+
+// Функция для добавления пользователя в канал "Новички"
+function addUserToNewbiesChannel(userId) {
+  const isMember = db.prepare('SELECT 1 FROM chat_members WHERE chat_id = ? AND user_id = ?').get(newbiesChannelId, userId);
+  if (!isMember) {
+    db.prepare('INSERT INTO chat_members (chat_id, user_id, role) VALUES (?, ?, ?)').run(newbiesChannelId, userId, 'member');
+    console.log(`👋 Пользователь ${userId} добавлен в канал "Новички"`);
+    
+    // Добавляем приветственное сообщение
+    const user = db.prepare('SELECT username FROM users WHERE id = ?').get(userId);
+    const welcomeText = `👋 Добро пожаловать, ${user.username || 'новый пользователь'}! Рады видеть вас в Wertongramm.`;
+    const stmt = db.prepare('INSERT INTO messages (chat_id, sender_id, text) VALUES (?, ?, ?)');
+    stmt.run(newbiesChannelId, userId, welcomeText);
+  }
 }
 
 const app = express();
@@ -126,6 +156,10 @@ app.post('/api/register', async (req, res) => {
     const isAdmin = (username === 'Wertonskiigod' || phone === 'Wertonskiigod') ? 1 : 0;
     const stmt = db.prepare('INSERT INTO users (phone, username, password_hash, is_admin, moons) VALUES (?, ?, ?, ?, ?)');
     const info = stmt.run(phone, username || null, hashed, isAdmin, 100);
+    
+    // Добавляем в канал "Новички"
+    addUserToNewbiesChannel(info.lastInsertRowid);
+    
     const token = jwt.sign({ userId: info.lastInsertRowid }, JWT_SECRET);
     res.json({ token, userId: info.lastInsertRowid, isAdmin });
   } catch (err) {
@@ -163,7 +197,7 @@ function requireAdmin(req, res, next) {
   next();
 }
 
-// ==================== API ====================
+// ==================== API ПОЛЬЗОВАТЕЛЕЙ ====================
 
 app.get('/api/me', authenticate, (req, res) => {
   const user = db.prepare('SELECT id, phone, username, moons, is_admin FROM users WHERE id = ?').get(req.userId);
@@ -193,13 +227,13 @@ app.post('/api/admin/add-moons', authenticate, requireAdmin, (req, res) => {
   res.json({ success: true, user });
 });
 
-// Получить список подарков
+// ==================== API ПОДАРКОВ ====================
+
 app.get('/api/gifts', authenticate, (req, res) => {
   const gifts = db.prepare('SELECT * FROM gifts ORDER BY price ASC').all();
   res.json(gifts);
 });
 
-// Подарить подарок
 app.post('/api/send-gift', authenticate, (req, res) => {
   const { toUserId, giftId, chatId } = req.body;
   const sender = db.prepare('SELECT id, moons FROM users WHERE id = ?').get(req.userId);
@@ -215,7 +249,12 @@ app.post('/api/send-gift', authenticate, (req, res) => {
   const message = db.prepare('INSERT INTO messages (chat_id, sender_id, text, gift_id) VALUES (?, ?, ?, ?)')
     .run(chatId, req.userId, `🎁 Подарил(а) ${gift.name} ${gift.icon}`, giftId);
   
-  const newMessage = db.prepare(`SELECT m.*, u.username FROM messages m JOIN users u ON u.id = m.sender_id WHERE m.id = ?`).get(message.lastInsertRowid);
+  const newMessage = db.prepare(`SELECT m.*, u.username, g.name as gift_name, g.icon as gift_icon 
+    FROM messages m 
+    JOIN users u ON u.id = m.sender_id 
+    LEFT JOIN gifts g ON g.id = m.gift_id
+    WHERE m.id = ?`).get(message.lastInsertRowid);
+  
   io.to(`chat:${chatId}`).emit('new_message', newMessage);
   io.emit('moons_updated', { userId: req.userId, moons: sender.moons - gift.price });
   io.emit('moons_updated', { userId: toUserId, moons: db.prepare('SELECT moons FROM users WHERE id = ?').get(toUserId).moons });
@@ -223,7 +262,6 @@ app.post('/api/send-gift', authenticate, (req, res) => {
   res.json({ success: true });
 });
 
-// Получить полученные подарки
 app.get('/api/my-gifts', authenticate, (req, res) => {
   const gifts = db.prepare(`
     SELECT ug.*, g.name, g.description, g.price, g.icon, u.username as from_username
@@ -237,7 +275,8 @@ app.get('/api/my-gifts', authenticate, (req, res) => {
   res.json(gifts);
 });
 
-// Остальные API (чаты, сообщения) остаются без изменений
+// ==================== API ЧАТОВ ====================
+
 app.get('/api/chats', authenticate, (req, res) => {
   const chats = db.prepare(`
     SELECT c.id, c.type, c.title,
@@ -305,6 +344,8 @@ app.get('/api/messages/:chatId', authenticate, (req, res) => {
   res.json(messages);
 });
 
+// ==================== API ФАЙЛОВ ====================
+
 app.post('/api/upload', authenticate, upload.single('file'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
   res.json({ filePath: `/uploads/${req.file.filename}` });
@@ -327,9 +368,12 @@ io.use((socket, next) => {
 });
 
 io.on('connection', (socket) => {
-  console.log(`User ${socket.userId} connected`);
+  console.log(`🔌 User ${socket.userId} connected`);
+  
   const userChats = db.prepare('SELECT chat_id FROM chat_members WHERE user_id = ?').all(socket.userId);
-  for (const { chat_id } of userChats) socket.join(`chat:${chat_id}`);
+  for (const { chat_id } of userChats) {
+    socket.join(`chat:${chat_id}`);
+  }
   
   socket.on('send_message', (data) => {
     const { chatId, text, filePath } = data;
@@ -337,7 +381,12 @@ io.on('connection', (socket) => {
     if (!isMember) return;
     const stmt = db.prepare('INSERT INTO messages (chat_id, sender_id, text, file_path) VALUES (?, ?, ?, ?)');
     const info = stmt.run(chatId, socket.userId, text, filePath || null);
-    const newMessage = db.prepare(`SELECT m.*, u.username FROM messages m JOIN users u ON u.id = m.sender_id WHERE m.id = ?`).get(info.lastInsertRowid);
+    const newMessage = db.prepare(`
+      SELECT m.*, u.username 
+      FROM messages m 
+      JOIN users u ON u.id = m.sender_id 
+      WHERE m.id = ?
+    `).get(info.lastInsertRowid);
     io.to(`chat:${chatId}`).emit('new_message', newMessage);
   });
   
@@ -358,8 +407,14 @@ io.on('connection', (socket) => {
   socket.on('typing', ({ chatId }) => {
     socket.to(`chat:${chatId}`).emit('user_typing', { userId: socket.userId, chatId });
   });
+  
+  socket.on('disconnect', () => {
+    console.log(`🔌 User ${socket.userId} disconnected`);
+  });
 });
 
 server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📱 Wertongramm is ready!`);
+  console.log(`👥 Канал "Новички" ID: ${newbiesChannelId}`);
 });
