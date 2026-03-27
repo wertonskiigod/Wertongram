@@ -1,49 +1,60 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wertongramm</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div id="auth">
-        <h2>Wertongramm</h2>
-        <div>
-            <input type="text" id="phone" placeholder="Phone" />
-            <input type="text" id="username" placeholder="Username (optional)" />
-            <input type="password" id="password" placeholder="Password" />
-            <button id="loginBtn">Login</button>
-            <button id="registerBtn">Register</button>
-        </div>
-    </div>
-
-    <div id="app" style="display:none;">
-        <div id="sidebar">
-            <div class="user-info">
-                <span id="currentUser"></span>
-                <button id="logoutBtn">Logout</button>
-            </div>
-            <div class="new-chat">
-                <input type="text" id="newChatPhone" placeholder="User phone to start chat" />
-                <button id="createChatBtn">+</button>
-            </div>
-            <div id="chatList"></div>
-        </div>
-        <div id="chatArea">
-            <div id="chatHeader"></div>
-            <div id="messagesContainer"></div>
-            <div id="inputArea">
-                <textarea id="messageInput" placeholder="Type a message..."></textarea>
-                <input type="file" id="fileInput" style="display:none;" />
-                <button id="attachBtn">📎</button>
-                <button id="sendBtn">Send</button>
-            </div>
-            <div id="typingIndicator" style="font-size:12px; color:gray;"></div>
-        </div>
-    </div>
-
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="app.js"></script>
-</body>
-</html>
+createChatBtn.onclick = async () => {
+    const phone = newChatPhone.value.trim();
+    if (!phone) {
+        alert('Введите телефон');
+        return;
+    }
+    
+    const token = getToken();
+    if (!token) {
+        alert('Вы не авторизованы');
+        return;
+    }
+    
+    try {
+        // Сначала ищем пользователя по телефону
+        const res = await fetch(`/api/user/by-phone/${phone}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!res.ok) {
+            if (res.status === 404) {
+                alert('Пользователь с таким телефоном не найден');
+            } else {
+                alert('Ошибка при поиске пользователя');
+            }
+            return;
+        }
+        
+        const user = await res.json();
+        
+        if (!user || !user.id) {
+            alert('Пользователь не найден');
+            return;
+        }
+        
+        // Создаём чат
+        const chatRes = await fetch('/api/chats/direct', {
+            method: 'POST',
+            headers: { 
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ userId2: user.id })
+        });
+        
+        const chat = await chatRes.json();
+        
+        if (chatRes.ok && chat.id) {
+            // Обновляем список чатов и открываем новый
+            await loadChats();
+            await openChat(chat.id);
+            newChatPhone.value = '';
+        } else {
+            alert('Ошибка при создании чата: ' + (chat.error || 'неизвестная ошибка'));
+        }
+    } catch (error) {
+        console.error('Ошибка:', error);
+        alert('Ошибка соединения с сервером');
+    }
+};
