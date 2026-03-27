@@ -59,6 +59,7 @@ db.exec(`
     sender_id INTEGER NOT NULL,
     text TEXT,
     file_path TEXT,
+    file_type TEXT,
     gift_id INTEGER,
     edited BOOLEAN DEFAULT 0,
     deleted BOOLEAN DEFAULT 0,
@@ -147,6 +148,21 @@ const PORT = process.env.PORT || 8080;
 app.use(express.json());
 app.use(express.static('public'));
 
+// ==================== НАСТРОЙКА ЗАГРУЗКИ ФАЙЛОВ ====================
+// Определяем тип файла по расширению и MIME
+function getFileType(filename, mimetype) {
+  const imageExt = /\.(jpg|jpeg|png|gif|webp|bmp)$/i;
+  const videoExt = /\.(mp4|webm|mov|avi|mkv)$/i;
+  
+  if (imageExt.test(filename) || mimetype.startsWith('image/')) {
+    return 'image';
+  }
+  if (videoExt.test(filename) || mimetype.startsWith('video/')) {
+    return 'video';
+  }
+  return 'file';
+}
+
 // Настройка multer для загрузки файлов
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -154,12 +170,18 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + '-' + file.originalname);
+    const ext = path.extname(file.originalname);
+    cb(null, uniqueSuffix + ext);
   }
 });
 
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/mpeg', 'application/pdf', 'text/plain'];
+  const allowedTypes = [
+    'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/bmp',
+    'video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska',
+    'application/pdf', 'text/plain', 'application/msword', 'application/zip'
+  ];
+  
   if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
@@ -169,7 +191,7 @@ const fileFilter = (req, file, cb) => {
 
 const upload = multer({ 
   storage: storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50 MB для видео
   fileFilter: fileFilter
 });
 
@@ -417,7 +439,7 @@ app.get('/api/messages/:chatId', authenticate, (req, res) => {
   res.json(messages);
 });
 
-// ==================== API ФАЙЛОВ ====================
+// ==================== API ЗАГРУЗКИ ФАЙЛОВ ====================
 
 app.post('/api/upload', authenticate, upload.single('file'), (req, res) => {
   if (!req.file) {
@@ -425,18 +447,43 @@ app.post('/api/upload', authenticate, upload.single('file'), (req, res) => {
   }
   
   const fileUrl = `/uploads/${req.file.filename}`;
-  console.log('📁 File uploaded:', fileUrl);
+  const fileType = getFileType(req.file.filename, req.file.mimetype);
+  
+  console.log('📁 File uploaded:', {
+    filename: req.file.filename,
+    type: fileType,
+    size: req.file.size,
+    url: fileUrl
+  });
   
   res.json({ 
     success: true, 
     filePath: fileUrl,
     filename: req.file.filename,
-    mimetype: req.file.mimetype
+    mimetype: req.file.mimetype,
+    fileType: fileType,
+    size: req.file.size
   });
 });
 
-// Раздача статических файлов из папки uploads
-app.use('/uploads', express.static(UPLOADS_DIR));
+// Раздача статических файлов из папки uploads с правильными MIME-типами
+app.use('/uploads', express.static(UPLOADS_DIR, {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.mp4')) {
+      res.setHeader('Content-Type', 'video/mp4');
+    } else if (filePath.endsWith('.webm')) {
+      res.setHeader('Content-Type', 'video/webm');
+    } else if (filePath.match(/\.(jpg|jpeg)$/i)) {
+      res.setHeader('Content-Type', 'image/jpeg');
+    } else if (filePath.endsWith('.png')) {
+      res.setHeader('Content-Type', 'image/png');
+    } else if (filePath.endsWith('.gif')) {
+      res.setHeader('Content-Type', 'image/gif');
+    } else if (filePath.endsWith('.webp')) {
+      res.setHeader('Content-Type', 'image/webp');
+    }
+  }
+}));
 
 // ==================== SOCKET.IO ====================
 
@@ -461,12 +508,12 @@ io.on('connection', (socket) => {
   }
   
   socket.on('send_message', (data) => {
-    const { chatId, text, filePath } = data;
+    const { chatId, text, filePath, fileType } = data;
     const isMember = db.prepare('SELECT 1 FROM chat_members WHERE chat_id = ? AND user_id = ?').get(chatId, socket.userId);
     if (!isMember) return;
     
-    const stmt = db.prepare('INSERT INTO messages (chat_id, sender_id, text, file_path) VALUES (?, ?, ?, ?)');
-    const info = stmt.run(chatId, socket.userId, text, filePath || null);
+    const stmt = db.prepare('INSERT INTO messages (chat_id, sender_id, text, file_path, file_type) VALUES (?, ?, ?, ?, ?)');
+    const info = stmt.run(chatId, socket.userId, text, filePath || null, fileType || null);
     const newMessage = db.prepare(`
       SELECT m.*, u.username 
       FROM messages m 
