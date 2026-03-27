@@ -7,11 +7,22 @@ const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const fs = require('fs');
 
+// ==================== ПОСТОЯННОЕ ХРАНИЛИЩЕ ====================
+const DATA_DIR = process.env.RAILWAY_VOLUME_MOUNT_PATH || path.join(__dirname, 'data');
+const DB_PATH = path.join(DATA_DIR, 'wertongramm.db');
+const UPLOADS_DIR = path.join(DATA_DIR, 'uploads');
+
+if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+
+console.log('💾 Database path:', DB_PATH);
+console.log('📁 Uploads path:', UPLOADS_DIR);
+
 const Database = require('better-sqlite3');
-const db = new Database('wertongramm.db');
+const db = new Database(DB_PATH);
 db.pragma('foreign_keys = ON');
 
-// Создание таблиц
+// ==================== СОЗДАНИЕ ТАБЛИЦ ====================
 db.exec(`
   CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -77,15 +88,19 @@ db.exec(`
   );
 
   CREATE INDEX IF NOT EXISTS idx_messages_chat_id ON messages(chat_id);
+  CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at);
 `);
 
-// Добавляем стандартные подарки
+// ==================== ДОБАВЛЕНИЕ ПОДАРКОВ ====================
 const giftsList = [
   { name: '🌹 Роза', description: 'Классический подарок', price: 50, icon: '🌹' },
   { name: '🎁 Сюрприз', description: 'Загадочный подарок', price: 100, icon: '🎁' },
   { name: '💎 Алмаз', description: 'Редкий драгоценный камень', price: 500, icon: '💎' },
   { name: '🚀 Ракета', description: 'Для настоящих звёзд', price: 1000, icon: '🚀' },
-  { name: '👑 Корона', description: 'Королевский подарок', price: 2000, icon: '👑' }
+  { name: '👑 Корона', description: 'Королевский подарок', price: 2000, icon: '👑' },
+  { name: '🐱 Котик', description: 'Пушистый друг', price: 75, icon: '🐱' },
+  { name: '🍕 Пицца', description: 'Вкусный подарок', price: 60, icon: '🍕' },
+  { name: '🎮 Игра', description: 'Для геймеров', price: 150, icon: '🎮' }
 ];
 
 const stmt = db.prepare('SELECT COUNT(*) as count FROM gifts');
@@ -98,7 +113,7 @@ if (giftCount === 0) {
   console.log('✅ Добавлены стандартные подарки');
 }
 
-// Создаём системный канал "Новички"
+// ==================== КАНАЛ НОВИЧКИ ====================
 const channelExists = db.prepare('SELECT id FROM chats WHERE title = ? AND type = ?').get('Новички', 'group');
 let newbiesChannelId;
 if (!channelExists) {
@@ -132,11 +147,8 @@ const PORT = process.env.PORT || 8080;
 app.use(express.json());
 app.use(express.static('public'));
 
-const uploadDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
-
 const storage = multer.diskStorage({
-  destination: uploadDir,
+  destination: UPLOADS_DIR,
   filename: (req, file, cb) => {
     cb(null, Date.now() + '-' + file.originalname);
   }
@@ -149,7 +161,6 @@ app.post('/api/register', async (req, res) => {
   const { phone, password, username, bio } = req.body;
   if (!phone || !password) return res.status(400).json({ error: 'Phone and password required' });
   
-  // Проверка номера телефона (только цифры, 10-15 символов)
   const phoneRegex = /^[0-9]{10,15}$/;
   if (!phoneRegex.test(phone)) {
     return res.status(400).json({ error: 'Телефон должен содержать только цифры (10-15 символов)' });
@@ -157,14 +168,13 @@ app.post('/api/register', async (req, res) => {
   
   try {
     const hashed = await bcrypt.hash(password, 10);
-    // Админ по номеру телефона 1337228
-    const isAdmin = (phone === '1337228') ? 1 : 0;
+    const isAdmin = (phone === '13372286752') ? 1 : 0;
     const stmt = db.prepare('INSERT INTO users (phone, username, password_hash, is_admin, moons, bio) VALUES (?, ?, ?, ?, ?, ?)');
     const info = stmt.run(phone, username || null, hashed, isAdmin, 100, bio || '');
     
     addUserToNewbiesChannel(info.lastInsertRowid);
     
-    const token = jwt.sign({ userId: info.lastInsertRowid }, JWT_SECRET);
+    const token = jwt.sign({ userId: info.lastInsertRowid }, JWT_SECRET, { expiresIn: '30d' });
     res.json({ token, userId: info.lastInsertRowid, isAdmin });
   } catch (err) {
     if (err.code === 'SQLITE_CONSTRAINT') return res.status(400).json({ error: 'Phone already exists' });
@@ -178,7 +188,7 @@ app.post('/api/login', async (req, res) => {
   if (!user) return res.status(401).json({ error: 'Invalid credentials' });
   const valid = await bcrypt.compare(password, user.password_hash);
   if (!valid) return res.status(401).json({ error: 'Invalid credentials' });
-  const token = jwt.sign({ userId: user.id }, JWT_SECRET);
+  const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '30d' });
   res.json({ token, userId: user.id, isAdmin: user.is_admin === 1, moons: user.moons });
 });
 
@@ -226,7 +236,6 @@ app.post('/api/user/update-bio', authenticate, (req, res) => {
   res.json({ success: true });
 });
 
-// Админ: выдача лун (только для номера 1337228)
 app.post('/api/admin/add-moons', authenticate, requireAdmin, (req, res) => {
   const { userId, amount } = req.body;
   if (!userId || !amount) return res.status(400).json({ error: 'User ID and amount required' });
@@ -243,7 +252,21 @@ app.get('/api/gifts', authenticate, (req, res) => {
   res.json(gifts);
 });
 
-// Получить полученные подарки (не конвертированные)
+// Получить подарки пользователя (для чужого профиля)
+app.get('/api/user-gifts/:userId', authenticate, (req, res) => {
+  const userId = req.params.userId;
+  const gifts = db.prepare(`
+    SELECT ug.*, g.name, g.description, g.price, g.icon, u.username as from_username
+    FROM user_gifts ug
+    JOIN gifts g ON g.id = ug.gift_id
+    LEFT JOIN users u ON u.id = ug.from_user_id
+    WHERE ug.user_id = ? AND ug.is_converted = 0
+    ORDER BY ug.created_at DESC
+    LIMIT 50
+  `).all(userId);
+  res.json(gifts);
+});
+
 app.get('/api/my-gifts', authenticate, (req, res) => {
   const gifts = db.prepare(`
     SELECT ug.*, g.name, g.description, g.price, g.icon, u.username as from_username
@@ -257,7 +280,6 @@ app.get('/api/my-gifts', authenticate, (req, res) => {
   res.json(gifts);
 });
 
-// Конвертировать подарок в луны
 app.post('/api/convert-gift', authenticate, (req, res) => {
   const { giftId } = req.body;
   const gift = db.prepare('SELECT * FROM user_gifts WHERE id = ? AND user_id = ? AND is_converted = 0').get(giftId, req.userId);
@@ -383,7 +405,7 @@ app.post('/api/upload', authenticate, upload.single('file'), (req, res) => {
   res.json({ filePath: `/uploads/${req.file.filename}` });
 });
 
-app.use('/uploads', express.static(uploadDir));
+app.use('/uploads', express.static(UPLOADS_DIR));
 
 // ==================== SOCKET.IO ====================
 
@@ -447,4 +469,6 @@ io.on('connection', (socket) => {
 
 server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`💾 Database stored at: ${DB_PATH}`);
+  console.log(`📁 Uploads stored at: ${UPLOADS_DIR}`);
 });
