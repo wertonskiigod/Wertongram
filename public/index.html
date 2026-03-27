@@ -95,14 +95,6 @@
             gap: 4px;
         }
         
-        .admin-badge {
-            background: var(--accent);
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 10px;
-            margin-left: 8px;
-        }
-        
         .logout-btn {
             background: none;
             border: none;
@@ -115,16 +107,28 @@
         .search-area {
             padding: 12px;
             border-bottom: 1px solid var(--border-color);
+            display: flex;
+            gap: 8px;
         }
         
         .search-input {
-            width: 100%;
+            flex: 1;
             padding: 10px 12px;
             background: var(--input-bg);
             border: none;
             border-radius: 24px;
             color: var(--text-color);
             font-size: 14px;
+        }
+        
+        .search-btn {
+            background: var(--accent);
+            border: none;
+            border-radius: 24px;
+            padding: 10px 16px;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
         }
         
         .chats-list {
@@ -321,10 +325,6 @@
             transition: background 0.2s;
         }
         
-        .input-area button:hover {
-            background: var(--accent-hover);
-        }
-        
         .attach-btn {
             background: var(--input-bg) !important;
         }
@@ -499,6 +499,7 @@
                 bottom: 0;
                 z-index: 100;
                 transition: left 0.3s;
+                width: 280px;
             }
             
             .sidebar.open {
@@ -536,7 +537,8 @@
             </div>
         </div>
         <div class="search-area">
-            <input type="text" id="newChatPhone" class="search-input" placeholder="Поиск по телефону...">
+            <input type="text" id="searchPhone" class="search-input" placeholder="Введите телефон для поиска...">
+            <button id="searchBtn" class="search-btn">🔍 Найти</button>
         </div>
         <div class="chats-list" id="chatsContainer"></div>
     </div>
@@ -590,7 +592,6 @@ const sidebar = document.getElementById('sidebar');
 const chatsContainer = document.getElementById('chatsContainer');
 const messagesContainer = document.getElementById('messagesContainer');
 const chatHeaderName = document.getElementById('chatHeaderName');
-const chatHeaderStatus = document.getElementById('chatHeaderStatus');
 const messageInput = document.getElementById('messageInput');
 const sendBtn = document.getElementById('sendBtn');
 const attachBtn = document.getElementById('attachBtn');
@@ -601,7 +602,8 @@ const currentAvatar = document.getElementById('currentAvatar');
 const currentUsername = document.getElementById('currentUsername');
 const moonsCount = document.getElementById('moonsCount');
 const logoutBtn = document.getElementById('logoutBtn');
-const newChatPhone = document.getElementById('newChatPhone');
+const searchPhone = document.getElementById('searchPhone');
+const searchBtn = document.getElementById('searchBtn');
 const giftModal = document.getElementById('giftModal');
 const giftsList = document.getElementById('giftsList');
 const adminPanel = document.getElementById('adminPanel');
@@ -754,11 +756,9 @@ async function openChat(chatId) {
     if (chatInfo.ok) {
         const chat = await chatInfo.json();
         let title = chat.title;
-        let avatar = '💬';
         if (chat.type === 'direct') {
             const other = chat.members.find(m => m.userId != currentUser.id);
             title = other ? other.username || other.userId : 'Unknown';
-            avatar = (title[0] || '💬').toUpperCase();
         }
         chatHeaderName.textContent = title;
         document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
@@ -906,11 +906,11 @@ async function sendGift(giftId) {
     }
 }
 
-// Создание чата по телефону
-createChatBtn.onclick = async () => {
-    const phone = newChatPhone.value.trim();
+// ПОИСК ПОЛЬЗОВАТЕЛЯ И СОЗДАНИЕ ЧАТА
+searchBtn.onclick = async () => {
+    const phone = searchPhone.value.trim();
     if (!phone) {
-        alert('Введите телефон');
+        alert('Введите телефон для поиска');
         return;
     }
     
@@ -921,13 +921,13 @@ createChatBtn.onclick = async () => {
     }
     
     try {
-        // Сначала ищем пользователя по телефону
+        // Ищем пользователя по телефону
         const res = await fetch(`/api/user/by-phone/${phone}`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         
         if (res.status === 404) {
-            alert('Пользователь с таким телефоном не найден');
+            alert('❌ Пользователь с таким телефоном не найден');
             return;
         }
         
@@ -956,10 +956,11 @@ createChatBtn.onclick = async () => {
         const chat = await chatRes.json();
         
         if (chatRes.ok && chat.id) {
+            alert(`✅ Чат с ${user.username || user.id} создан!`);
             // Обновляем список чатов и открываем новый
             await loadChats();
             await openChat(chat.id);
-            newChatPhone.value = '';
+            searchPhone.value = '';
         } else {
             alert('Ошибка при создании чата: ' + (chat.error || 'неизвестная ошибка'));
         }
@@ -968,6 +969,13 @@ createChatBtn.onclick = async () => {
         alert('Ошибка соединения с сервером');
     }
 };
+
+// Поиск по Enter
+searchPhone.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        searchBtn.click();
+    }
+});
 
 // Админ: выдача лун
 document.getElementById('adminAddMoonsBtn').onclick = async () => {
@@ -985,7 +993,7 @@ document.getElementById('adminAddMoonsBtn').onclick = async () => {
     });
     const data = await res.json();
     if (res.ok) {
-        alert(`Выдано ${amount} лун пользователю ${data.user.username}`);
+        alert(`✅ Выдано ${amount} лун пользователю ${data.user.username}`);
         document.getElementById('adminUserId').value = '';
         document.getElementById('adminMoonsAmount').value = '';
         await loadUserInfo();
@@ -1063,12 +1071,6 @@ function connectSocket() {
             moonsCount.textContent = moons;
         }
     });
-}
-
-// Добавляем переменную для createChatBtn
-const createChatBtn = document.getElementById('createChatBtn');
-if (createChatBtn) {
-    createChatBtn.onclick = createChatBtn.onclick;
 }
 </script>
 </body>
