@@ -916,6 +916,289 @@ function connectSocket() {
     if (authDiv) authDiv.style.display = 'flex';
     if (appDiv) appDiv.style.display = 'none';
 })();
+ // ==================== КНОПКИ НАСТРОЕК ====================
+// Кнопка "Редактировать профиль"
+if (editProfileBtn) {
+    editProfileBtn.onclick = () => {
+        const newFirstName = prompt('Введите новое имя:', currentUser.first_name || '');
+        const newLastName = prompt('Введите новую фамилию:', currentUser.last_name || '');
+        const newBio = prompt('Введите новое описание:', currentUser.bio || '');
+        
+        fetch('/api/user/update-profile', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ first_name: newFirstName, last_name: newLastName, bio: newBio })
+        }).then(() => loadUserInfo());
+    };
+}
+
+// Кнопка "Создать группу"
+if (createGroupBtn) {
+    createGroupBtn.onclick = async () => {
+        const title = prompt('Введите название группы:');
+        if (!title) return;
+        const res = await fetch('/api/chats/group', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, description: '' })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            alert(`✅ Группа "${title}" создана!`);
+            await loadChats();
+        } else alert(data.error || 'Ошибка');
+    };
+}
+
+// Кнопка "Создать опрос" в настройках
+if (createPollBtn) {
+    createPollBtn.onclick = () => {
+        if (!currentChatId) {
+            alert('Сначала выберите чат');
+            return;
+        }
+        pollModal.style.display = 'flex';
+    };
+}
+
+// Кнопка "Мои стикеры"
+if (myStickersBtn) {
+    myStickersBtn.onclick = async () => {
+        await loadStickerSets();
+        stickerSets.innerHTML = '';
+        for (const set of allStickerSets) {
+            const div = document.createElement('div');
+            div.className = 'gift-item';
+            div.innerHTML = `<div><strong>${set.title}</strong> (${set.stickers_count} стикеров)</div>`;
+            div.onclick = () => loadStickersForSet(set.id);
+            stickerSets.appendChild(div);
+        }
+        stickerModal.style.display = 'flex';
+    };
+}
+
+// Кнопка "Заблокированные"
+if (blockedUsersBtn) {
+    blockedUsersBtn.onclick = async () => {
+        const res = await fetch('/api/blocked', { headers: { 'Authorization': `Bearer ${getToken()}` } });
+        const blocked = await res.json();
+        if (blocked.length === 0) {
+            alert('Нет заблокированных пользователей');
+        } else {
+            alert(`Заблокированные: ${blocked.map(u => u.username || u.first_name).join(', ')}`);
+        }
+    };
+}
+
+// Кнопка блокировки пользователя в профиле
+if (blockUserBtn) {
+    blockUserBtn.onclick = async () => {
+        if (confirm('Заблокировать этого пользователя?')) {
+            const res = await fetch('/api/block-user', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ blockedUserId: selectedUserId })
+            });
+            if (res.ok) {
+                alert('✅ Пользователь заблокирован');
+                profileModal.style.display = 'none';
+            } else alert('Ошибка');
+        }
+    };
+}
+
+// Кнопка информации о чате
+if (chatInfoBtn) {
+    chatInfoBtn.onclick = async () => {
+        if (!currentChatId) return;
+        const res = await fetch(`/api/chat/${currentChatId}`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
+        const chat = await res.json();
+        alert(`Чат: ${chat.title}\nТип: ${chat.type}\nУчастников: ${chat.members?.length || 0}`);
+    };
+}
+
+// Кнопка поиска в чате
+if (chatSearchBtn) {
+    chatSearchBtn.onclick = () => {
+        const searchTerm = prompt('Поиск в чате:');
+        if (!searchTerm) return;
+        const messages = document.querySelectorAll('.message-text');
+        let found = false;
+        messages.forEach(msg => {
+            if (msg.innerText.toLowerCase().includes(searchTerm.toLowerCase())) {
+                msg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                msg.style.backgroundColor = 'rgba(201, 110, 255, 0.3)';
+                setTimeout(() => msg.style.backgroundColor = '', 2000);
+                found = true;
+            }
+        });
+        if (!found) alert('Ничего не найдено');
+    };
+}
+
+// Кнопка меню чата
+if (chatMenuBtn) {
+    chatMenuBtn.onclick = () => {
+        const action = prompt('Действия:\n1 - Очистить чат\n2 - Покинуть чат');
+        if (action === '1') {
+            if (confirm('Очистить все сообщения?')) {
+                alert('Функция в разработке');
+            }
+        } else if (action === '2') {
+            if (confirm('Покинуть чат?')) {
+                fetch('/api/chats/leave', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chatId: currentChatId })
+                }).then(() => {
+                    loadChats();
+                    chatHeader.style.display = 'none';
+                    currentChatId = null;
+                });
+            }
+        }
+    };
+}
+
+// Исправление для кнопки стикеров
+if (stickerBtn) {
+    stickerBtn.onclick = async () => {
+        if (!currentChatId) {
+            alert('Сначала выберите чат');
+            return;
+        }
+        await loadStickerSets();
+        stickerSets.innerHTML = '';
+        for (const set of allStickerSets) {
+            const div = document.createElement('div');
+            div.className = 'gift-item';
+            div.innerHTML = `<div><strong>${set.title}</strong> (${set.stickers_count} стикеров)</div>`;
+            div.onclick = () => loadStickersForSet(set.id);
+            stickerSets.appendChild(div);
+        }
+        stickerModal.style.display = 'flex';
+    };
+}
+
+// Исправление для кнопки опроса
+if (pollBtn) {
+    pollBtn.onclick = () => {
+        if (!currentChatId) {
+            alert('Сначала выберите чат');
+            return;
+        }
+        pollModal.style.display = 'flex';
+    };
+}
+
+// Исправление для отправки эмодзи (простые эмодзи)
+if (messageInput) {
+    // Добавляем поддержку ввода эмодзи через стандартную клавиатуру
+    messageInput.addEventListener('input', () => {
+        // Эмодзи уже поддерживаются стандартной клавиатурой
+    });
+}
+
+// Функция для загрузки стикеров набора
+async function loadStickersForSet(setId) {
+    const res = await fetch(`/api/stickers/${setId}`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
+    if (res.ok) {
+        const stickers = await res.json();
+        stickerList.innerHTML = '';
+        for (const s of stickers) {
+            const div = document.createElement('div');
+            div.className = 'sticker-item';
+            // Если это стандартный эмодзи-стикер
+            if (s.file_path && s.file_path.length <= 2) {
+                div.innerHTML = `<div class="sticker-info"><div class="sticker-icon" style="font-size:48px">${s.file_path}</div><div>${s.emoji || 'Стикер'}</div></div>`;
+                div.onclick = () => sendStickerEmoji(s.file_path);
+            } else {
+                div.innerHTML = `<div class="sticker-info"><div class="sticker-icon">📷</div><div>Стикер</div></div>`;
+                div.onclick = () => sendStickerImage(s.file_path);
+            }
+            stickerList.appendChild(div);
+        }
+    }
+}
+
+// Отправка эмодзи-стикера
+function sendStickerEmoji(emoji) {
+    if (!currentChatId) return;
+    socket.emit('send_message', { chatId: currentChatId, text: emoji });
+    stickerModal.style.display = 'none';
+}
+
+// Отправка изображения-стикера
+async function sendStickerImage(filePath) {
+    if (!currentChatId) return;
+    socket.emit('send_message', { chatId: currentChatId, text: '', filePath: filePath, fileType: 'image' });
+    stickerModal.style.display = 'none';
+}
+
+// Функция для создания опроса
+if (createPollBtnSubmit) {
+    createPollBtnSubmit.onclick = async () => {
+        const question = pollQuestion.value;
+        const options = Array.from(document.querySelectorAll('.poll-option-input')).map(inp => inp.value.trim()).filter(v => v);
+        if (!question || options.length < 2) {
+            alert('Введите вопрос и минимум 2 варианта');
+            return;
+        }
+        const res = await fetch('/api/polls/create', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chatId: currentChatId, question, options, isMultiple: pollMultiple.checked })
+        });
+        if (res.ok) {
+            pollModal.style.display = 'none';
+            pollQuestion.value = '';
+            pollOptionsList.innerHTML = `<input type="text" class="admin-input poll-option-input" placeholder="Вариант 1"><input type="text" class="admin-input poll-option-input" placeholder="Вариант 2">`;
+            pollMultiple.checked = false;
+        } else alert('Ошибка создания опроса');
+    };
+}
+
+// Голосование в опросе
+document.addEventListener('click', async (e) => {
+    const pollOption = e.target.closest('.poll-option');
+    if (pollOption) {
+        const pollDiv = pollOption.closest('.poll');
+        const pollId = pollDiv?.dataset.pollId;
+        const optionId = pollOption.dataset.optionId;
+        if (pollId && optionId) {
+            const res = await fetch('/api/polls/vote', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pollId, optionId })
+            });
+            if (res.ok) {
+                // Обновляем отображение
+                const updatedPoll = await fetch(`/api/polls/${pollId}`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
+                const data = await updatedPoll.json();
+                const totalVotes = data.options.reduce((sum, opt) => sum + opt.votes, 0);
+                pollOption.querySelector('.poll-option-fill').style.width = totalVotes ? (data.options.find(o => o.id == optionId).votes / totalVotes * 100) + '%' : '0%';
+            } else alert('Ошибка голосования');
+        }
+    }
+});
+
+// Создание группы (дополнительная кнопка в настройках)
+if (createGroupBtn) {
+    createGroupBtn.onclick = async () => {
+        const title = prompt('Введите название группы:');
+        if (!title) return;
+        const res = await fetch('/api/chats/group', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, description: '' })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            alert(`✅ Группа "${title}" создана!`);
+            await loadChats();
+        } else alert(data.error || 'Ошибка');
+    };
+}   
 </script>
 </body>
 </html>
