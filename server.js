@@ -151,6 +151,15 @@ db.exec(`
     FOREIGN KEY (contact_id) REFERENCES users(id) ON DELETE CASCADE
   );
 
+  CREATE TABLE IF NOT EXISTS blocked_users (
+    user_id INTEGER NOT NULL,
+    blocked_user_id INTEGER NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, blocked_user_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (blocked_user_id) REFERENCES users(id) ON DELETE CASCADE
+  );
+
   CREATE INDEX IF NOT EXISTS idx_messages_chat_id ON messages(chat_id);
   CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at);
 `);
@@ -355,6 +364,20 @@ app.post('/api/chats/direct', authenticate, (req, res) => {
   res.json({ id: chatId });
 });
 
+app.post('/api/chats/group', authenticate, (req, res) => {
+  const { title, description } = req.body;
+  const chatInfo = db.prepare('INSERT INTO chats (type, title, description) VALUES (?, ?, ?)').run('group', title, description || '');
+  const chatId = chatInfo.lastInsertRowid;
+  db.prepare('INSERT INTO chat_members (chat_id, user_id, role) VALUES (?, ?, ?)').run(chatId, req.userId, 'owner');
+  res.json({ id: chatId });
+});
+
+app.post('/api/chats/leave', authenticate, (req, res) => {
+  const { chatId } = req.body;
+  db.prepare('DELETE FROM chat_members WHERE chat_id = ? AND user_id = ?').run(chatId, req.userId);
+  res.json({ success: true });
+});
+
 // ==================== API СООБЩЕНИЙ ====================
 app.get('/api/messages/:chatId', authenticate, (req, res) => {
   const chatId = req.params.chatId;
@@ -494,6 +517,36 @@ app.post('/api/polls/vote', authenticate, (req, res) => {
   db.prepare('INSERT OR IGNORE INTO poll_votes (poll_id, user_id, option_id) VALUES (?, ?, ?)').run(pollId, req.userId, optionId);
   db.prepare('UPDATE poll_options SET votes = votes + 1 WHERE id = ?').run(optionId);
   io.emit('poll_updated', { pollId });
+  res.json({ success: true });
+});
+
+app.get('/api/polls/:pollId', authenticate, (req, res) => {
+  const poll = db.prepare('SELECT * FROM polls WHERE id = ?').get(req.params.pollId);
+  if (!poll) return res.status(404).json({ error: 'Poll not found' });
+  const options = db.prepare('SELECT * FROM poll_options WHERE poll_id = ?').all(poll.id);
+  res.json({ poll, options });
+});
+
+// ==================== API ЗАБЛОКИРОВАННЫХ ====================
+app.get('/api/blocked', authenticate, (req, res) => {
+  const blocked = db.prepare(`
+    SELECT u.id, u.username, u.first_name, u.last_name, u.avatar
+    FROM blocked_users bu JOIN users u ON u.id = bu.blocked_user_id WHERE bu.user_id = ?
+  `).all(req.userId);
+  res.json(blocked);
+});
+
+app.post('/api/block-user', authenticate, (req, res) => {
+  const { blockedUserId } = req.body;
+  db.prepare('INSERT OR REPLACE INTO blocked_users (user_id, blocked_user_id) VALUES (?, ?)').run(req.userId, blockedUserId);
+  res.json({ success: true });
+});
+
+// ==================== API ОБНОВЛЕНИЯ ПРОФИЛЯ ====================
+app.post('/api/user/update-profile', authenticate, (req, res) => {
+  const { first_name, last_name, bio } = req.body;
+  db.prepare('UPDATE users SET first_name = COALESCE(?, first_name), last_name = COALESCE(?, last_name), bio = COALESCE(?, bio) WHERE id = ?')
+    .run(first_name || null, last_name || null, bio || null, req.userId);
   res.json({ success: true });
 });
 
