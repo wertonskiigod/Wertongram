@@ -82,10 +82,11 @@
             z-index: 1;
         }
         
+        /* Боковая панель - адаптация под телефон */
         .sidebar {
             width: 85%;
             max-width: 320px;
-            background: rgba(10, 10, 10, 0.92);
+            background: rgba(10, 10, 10, 0.95);
             backdrop-filter: blur(20px);
             border-right: 1px solid rgba(154, 74, 202, 0.5);
             display: flex;
@@ -99,15 +100,20 @@
             box-shadow: 2px 0 20px rgba(0,0,0,0.5);
         }
         
-        .sidebar.open { left: 0; }
+        .sidebar.open {
+            left: 0;
+        }
         
+        /* Для планшетов и ПК */
         @media (min-width: 768px) {
             .sidebar {
                 position: relative;
                 left: 0;
                 width: 320px;
             }
-            .menu-toggle { display: none; }
+            .menu-toggle {
+                display: none;
+            }
         }
         
         .menu-toggle {
@@ -126,10 +132,12 @@
             cursor: pointer;
             z-index: 101;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            transition: all 0.3s;
+            transition: all 0.2s;
         }
         
-        .menu-toggle:active { transform: scale(0.95); }
+        .menu-toggle:active {
+            transform: scale(0.95);
+        }
         
         .sidebar-header {
             padding: 16px;
@@ -148,6 +156,7 @@
             align-items: center;
             gap: 12px;
             cursor: pointer;
+            flex: 1;
         }
         
         .avatar {
@@ -160,20 +169,28 @@
             justify-content: center;
             font-size: 20px;
             transition: all 0.2s;
-            object-fit: cover;
+            overflow: hidden;
         }
         
         .avatar-img {
             width: 100%;
             height: 100%;
-            border-radius: 50%;
             object-fit: cover;
         }
         
-        .avatar:active { transform: scale(0.95); }
+        .avatar:active {
+            transform: scale(0.95);
+        }
         
-        .username { font-weight: 600; font-size: 16px; }
-        .moons { font-size: 12px; color: #c96eff; }
+        .username {
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        .moons {
+            font-size: 12px;
+            color: #c96eff;
+        }
         
         .logout-btn {
             background: none;
@@ -184,7 +201,9 @@
             padding: 8px;
         }
         
-        .logout-btn:active { transform: scale(0.95); }
+        .logout-btn:active {
+            transform: scale(0.95);
+        }
         
         .search-area {
             padding: 12px;
@@ -195,12 +214,12 @@
         
         .search-input {
             flex: 1;
-            padding: 10px 12px;
+            padding: 12px;
             background: rgba(26, 10, 42, 0.8);
             border: 1px solid rgba(154, 74, 202, 0.5);
             border-radius: 24px;
             color: white;
-            font-size: 14px;
+            font-size: 16px;
         }
         
         .search-input:focus {
@@ -213,18 +232,24 @@
             background: linear-gradient(135deg, #9a4aca, #6a2a8a);
             border: none;
             border-radius: 24px;
-            padding: 10px 16px;
+            padding: 12px 16px;
             color: white;
             font-weight: bold;
             cursor: pointer;
+            font-size: 14px;
         }
         
-        .search-btn:active { transform: scale(0.95); }
+        .search-btn:active {
+            transform: scale(0.95);
+        }
         
-        .chats-list { flex: 1; overflow-y: auto; }
+        .chats-list {
+            flex: 1;
+            overflow-y: auto;
+        }
         
         .chat-item {
-            padding: 12px 16px;
+            padding: 14px 16px;
             display: flex;
             align-items: center;
             gap: 12px;
@@ -233,7 +258,10 @@
             border-left: 3px solid transparent;
         }
         
-        .chat-item:active { background: rgba(154, 74, 202, 0.3); }
+        .chat-item:active {
+            background: rgba(154, 74, 202, 0.3);
+        }
+        
         .chat-item.active {
             background: linear-gradient(90deg, rgba(154, 74, 202, 0.3), transparent);
             border-left-color: #c96eff;
@@ -248,28 +276,22 @@
             align-items: center;
             justify-content: center;
             font-size: 20px;
-            object-fit: cover;
         }
         
-        .chat-avatar-img {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
+        .chat-name {
+            font-weight: 500;
+            font-size: 16px;
         }
-        
-        .chat-name { font-weight: 500; }
         
         .chat-area {
             flex: 1;
             display: flex;
             flex-direction: column;
-            background: rgba(10, 10, 10, 0.75);
-            backdrop-filter: blur(10px);
+            background: rgba(10, 10, 10, 0.85);
         }
         
         .chat-header {
-            padding: 12px 20px;
+            padding: 14px 16px;
             background: linear-gradient(135deg, rgba(26, 10, 42, 0.9), rgba(42, 10, 58, 0.9));
             border-bottom: 1px solid rgba(154, 74, 202, 0.6);
             font-weight: 600;
@@ -279,7 +301,7 @@
         .messages {
             flex: 1;
             overflow-y: auto;
-            padding: 16px;
+            padding: 12px;
             display: flex;
             flex-direction: column;
             gap: 8px;
@@ -287,7 +309,7 @@
         
         .message {
             max-width: 85%;
-            padding: 8px 12px;
+            padding: 10px 14px;
             border-radius: 18px;
             position: relative;
         }
@@ -309,7 +331,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
             font-size: 12px;
             font-weight: 500;
         }
@@ -319,29 +341,26 @@
             color: #c96eff;
         }
         
-        .message-sender:active { opacity: 0.7; }
-        
         .message-text {
-            margin-bottom: 4px;
+            margin-bottom: 6px;
             line-height: 1.4;
             word-break: break-word;
+            font-size: 15px;
         }
         
         .message-image {
-            max-width: 220px;
-            max-height: 220px;
+            max-width: 200px;
+            max-height: 200px;
             border-radius: 12px;
-            margin-top: 4px;
+            margin-top: 6px;
             cursor: pointer;
         }
         
-        .message-image:active { transform: scale(0.98); }
-        
         .message-video {
-            max-width: 220px;
-            max-height: 220px;
+            max-width: 200px;
+            max-height: 200px;
             border-radius: 12px;
-            margin-top: 4px;
+            margin-top: 6px;
         }
         
         .file-attachment {
@@ -353,7 +372,8 @@
             border-radius: 12px;
             text-decoration: none;
             color: #c96eff;
-            margin-top: 4px;
+            margin-top: 6px;
+            font-size: 13px;
         }
         
         .message-meta {
@@ -374,13 +394,13 @@
             background: none;
             border: none;
             color: #c96eff;
-            font-size: 11px;
+            font-size: 12px;
             cursor: pointer;
             padding: 4px;
         }
         
         .input-area {
-            padding: 12px 16px;
+            padding: 12px;
             background: linear-gradient(135deg, rgba(26, 10, 42, 0.9), rgba(42, 10, 58, 0.9));
             border-top: 1px solid rgba(154, 74, 202, 0.6);
             display: flex;
@@ -393,11 +413,12 @@
             background: rgba(26, 10, 42, 0.8);
             border: 1px solid rgba(154, 74, 202, 0.5);
             border-radius: 24px;
-            padding: 10px 16px;
+            padding: 12px 16px;
             color: white;
-            font-size: 15px;
+            font-size: 16px;
             resize: none;
             font-family: inherit;
+            max-height: 100px;
         }
         
         #messageInput:focus {
@@ -410,17 +431,25 @@
             background: linear-gradient(135deg, #9a4aca, #6a2a8a);
             border: none;
             border-radius: 30px;
-            padding: 10px 16px;
+            padding: 12px 16px;
             color: white;
             cursor: pointer;
-            min-width: 44px;
-            min-height: 44px;
+            min-width: 48px;
+            min-height: 48px;
+            font-size: 18px;
         }
         
-        .input-area button:active { transform: scale(0.95); }
+        .input-area button:active {
+            transform: scale(0.95);
+        }
         
-        .attach-btn, .gift-btn { background: rgba(154, 74, 202, 0.6) !important; }
-        .gift-btn { background: linear-gradient(135deg, #ff9800, #ff5722) !important; }
+        .attach-btn, .gift-btn {
+            background: rgba(154, 74, 202, 0.6) !important;
+        }
+        
+        .gift-btn {
+            background: linear-gradient(135deg, #ff9800, #ff5722) !important;
+        }
         
         .typing-indicator {
             font-size: 12px;
@@ -428,7 +457,7 @@
             padding: 4px 16px;
         }
         
-        /* Модальные окна */
+        /* Модальные окна - адаптация под телефон */
         .modal {
             display: none;
             position: fixed;
@@ -446,8 +475,8 @@
         .profile-modal {
             background: linear-gradient(135deg, #1a0a2a, #2a0a3a);
             border-radius: 28px;
-            width: 320px;
-            max-width: 90%;
+            width: 90%;
+            max-width: 340px;
             overflow: hidden;
             border: 1px solid rgba(154, 74, 202, 0.6);
             box-shadow: 0 0 30px rgba(154, 74, 202, 0.3);
@@ -475,8 +504,8 @@
             justify-content: center;
             font-size: 40px;
             border: 4px solid #2a0a3a;
-            cursor: pointer;
             overflow: hidden;
+            cursor: pointer;
         }
         
         .profile-avatar-large img {
@@ -490,9 +519,23 @@
             text-align: center;
         }
         
-        .profile-name { font-size: 24px; font-weight: 600; margin-bottom: 4px; }
-        .profile-user-id { font-size: 12px; color: #c96eff; margin-bottom: 8px; }
-        .profile-username { font-size: 14px; color: #c96eff; margin-bottom: 12px; }
+        .profile-name {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .profile-user-id {
+            font-size: 12px;
+            color: #c96eff;
+            margin-bottom: 8px;
+        }
+        
+        .profile-username {
+            font-size: 14px;
+            color: #c96eff;
+            margin-bottom: 12px;
+        }
         
         .profile-bio {
             font-size: 14px;
@@ -513,13 +556,24 @@
             border-radius: 20px;
         }
         
-        .stat { text-align: center; }
-        .stat-value { font-size: 20px; font-weight: bold; color: #c96eff; }
-        .stat-label { font-size: 12px; color: #8e8e8e; }
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #c96eff;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #8e8e8e;
+        }
         
         .profile-btn {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             background: linear-gradient(135deg, #9a4aca, #6a2a8a);
             border: none;
             border-radius: 24px;
@@ -527,16 +581,22 @@
             font-weight: bold;
             cursor: pointer;
             margin-top: 8px;
+            font-size: 16px;
         }
         
-        .profile-btn:active { transform: scale(0.98); }
-        .profile-btn.secondary { background: rgba(154, 74, 202, 0.6); }
+        .profile-btn:active {
+            transform: scale(0.98);
+        }
+        
+        .profile-btn.secondary {
+            background: rgba(154, 74, 202, 0.6);
+        }
         
         .gift-modal {
             background: linear-gradient(135deg, #1a0a2a, #2a0a3a);
             border-radius: 28px;
-            width: 340px;
-            max-width: 90%;
+            width: 90%;
+            max-width: 340px;
             max-height: 80vh;
             overflow-y: auto;
             padding: 20px;
@@ -547,16 +607,35 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px;
+            padding: 14px;
             border-bottom: 1px solid rgba(154, 74, 202, 0.3);
             cursor: pointer;
         }
         
-        .gift-item:active { background: rgba(154, 74, 202, 0.3); border-radius: 12px; }
+        .gift-item:active {
+            background: rgba(154, 74, 202, 0.3);
+            border-radius: 12px;
+        }
         
-        .gift-info { display: flex; gap: 12px; align-items: center; }
-        .gift-icon { font-size: 32px; }
-        .gift-price { color: #ff9800; font-size: 12px; }
+        .gift-info {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .gift-icon {
+            font-size: 36px;
+        }
+        
+        .gift-name {
+            font-size: 16px;
+            font-weight: 500;
+        }
+        
+        .gift-price {
+            color: #ff9800;
+            font-size: 12px;
+        }
         
         .convert-btn {
             background: linear-gradient(135deg, #ff9800, #ff5722);
@@ -568,7 +647,9 @@
             font-size: 12px;
         }
         
-        .convert-btn:active { transform: scale(0.95); }
+        .convert-btn:active {
+            transform: scale(0.95);
+        }
         
         .admin-panel {
             margin-top: 16px;
@@ -578,12 +659,13 @@
         
         .admin-input {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             margin: 8px 0;
             background: rgba(26, 10, 42, 0.8);
             border: 1px solid rgba(154, 74, 202, 0.5);
             border-radius: 12px;
             color: white;
+            font-size: 14px;
         }
         
         .admin-button, .close-button {
@@ -595,9 +677,12 @@
             border-radius: 12px;
             color: white;
             cursor: pointer;
+            font-size: 14px;
         }
         
-        .close-button { background: rgba(154, 74, 202, 0.6); }
+        .close-button {
+            background: rgba(154, 74, 202, 0.6);
+        }
         
         #auth {
             display: flex;
@@ -609,14 +694,15 @@
             animation: gradientFlow 12s ease infinite;
             position: relative;
             z-index: 1;
+            padding: 16px;
         }
         
         .auth-card {
             background: linear-gradient(135deg, rgba(26, 10, 42, 0.95), rgba(42, 10, 58, 0.95));
-            padding: 28px;
+            padding: 24px;
             border-radius: 28px;
-            width: 320px;
-            max-width: 90%;
+            width: 100%;
+            max-width: 340px;
             border: 1px solid rgba(154, 74, 202, 0.6);
             backdrop-filter: blur(10px);
             box-shadow: 0 0 30px rgba(154, 74, 202, 0.2);
@@ -630,16 +716,16 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             animation: gradientFlow 3s ease infinite;
-            font-size: 28px;
+            font-size: 26px;
         }
         
         .auth-card input, .auth-card textarea {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             margin: 8px 0;
             background: rgba(26, 10, 42, 0.8);
             border: 1px solid rgba(154, 74, 202, 0.5);
-            border-radius: 20px;
+            border-radius: 24px;
             color: white;
             font-size: 16px;
         }
@@ -652,52 +738,103 @@
         
         .auth-card button {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             margin: 8px 0;
             background: linear-gradient(135deg, #9a4aca, #6a2a8a);
             border: none;
-            border-radius: 20px;
+            border-radius: 24px;
             color: white;
             font-weight: bold;
             cursor: pointer;
             font-size: 16px;
         }
         
-        .auth-card button:active { transform: scale(0.98); }
+        .auth-card button:active {
+            transform: scale(0.98);
+        }
         
-        .auth-buttons { display: flex; gap: 10px; margin-top: 16px; }
-        .auth-buttons button { flex: 1; }
+        .auth-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
         
-        textarea { font-family: inherit; resize: none; }
+        .auth-buttons button {
+            flex: 1;
+        }
+        
+        textarea {
+            font-family: inherit;
+            resize: none;
+        }
         
         .error-input {
             border-color: #ff4444 !important;
             box-shadow: 0 0 10px rgba(255, 68, 68, 0.3);
         }
         
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
-        ::-webkit-scrollbar-thumb { background: #9a4aca; border-radius: 4px; }
-        
-        .avatar-upload-btn {
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            background: #9a4aca;
-            border-radius: 50%;
-            width: 28px;
-            height: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            cursor: pointer;
-            border: 2px solid #1a0a2a;
+        ::-webkit-scrollbar {
+            width: 3px;
         }
         
-        .avatar-wrapper {
-            position: relative;
-            display: inline-block;
+        ::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #9a4aca;
+            border-radius: 3px;
+        }
+        
+        /* Адаптация для маленьких экранов */
+        @media (max-width: 480px) {
+            .chat-header {
+                font-size: 16px;
+                padding: 12px;
+            }
+            
+            .message {
+                max-width: 90%;
+                padding: 8px 12px;
+            }
+            
+            .message-text {
+                font-size: 14px;
+            }
+            
+            .chat-name {
+                font-size: 14px;
+            }
+            
+            .avatar, .chat-avatar {
+                width: 44px;
+                height: 44px;
+                font-size: 18px;
+            }
+            
+            .username {
+                font-size: 14px;
+            }
+            
+            .moons {
+                font-size: 11px;
+            }
+            
+            .search-input, .search-btn {
+                padding: 10px;
+                font-size: 14px;
+            }
+            
+            .input-area button {
+                padding: 10px 14px;
+                min-width: 44px;
+                min-height: 44px;
+            }
+            
+            #messageInput {
+                padding: 10px 14px;
+                font-size: 14px;
+            }
         }
     </style>
 </head>
@@ -869,11 +1006,17 @@ function setToken(t) { localStorage.setItem('token', t); }
 function clearToken() { localStorage.removeItem('token'); }
 
 // Меню для телефона
-menuToggle.onclick = () => { sidebar.classList.toggle('open'); };
+if (menuToggle) {
+    menuToggle.onclick = (e) => {
+        e.stopPropagation();
+        sidebar.classList.toggle('open');
+    };
+}
 
+// Закрытие меню при клике вне его
 document.addEventListener('click', (e) => {
     if (window.innerWidth < 768) {
-        if (!sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
+        if (sidebar && !sidebar.contains(e.target) && menuToggle && !menuToggle.contains(e.target)) {
             sidebar.classList.remove('open');
         }
     }
@@ -898,79 +1041,96 @@ function renderFileAttachment(filePath, fileType) {
     if (type === 'image') {
         return `<div><img src="${filePath}" class="message-image" onclick="window.open('${filePath}', '_blank')" loading="lazy"></div>`;
     } else if (type === 'video') {
-        return `<div><video src="${filePath}" controls class="message-video" style="max-width: 220px; max-height: 220px; border-radius: 12px; margin-top: 4px;" preload="metadata"></video></div>`;
+        return `<div><video src="${filePath}" controls class="message-video" style="max-width: 200px; max-height: 200px; border-radius: 12px; margin-top: 4px;" preload="metadata"></video></div>`;
     } else {
         return `<div><a href="${filePath}" target="_blank" class="file-attachment" download>📎 ${escapeHtml(filename)}</a></div>`;
     }
 }
 
 function updateAvatarDisplay(avatarUrl) {
-    if (avatarUrl) {
-        currentAvatar.innerHTML = `<img src="${avatarUrl}" class="avatar-img" style="width:100%;height:100%;object-fit:cover;">`;
-        profileAvatarContent.innerHTML = `<img src="${avatarUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+    if (avatarUrl && avatarUrl !== 'null' && avatarUrl !== '') {
+        if (currentAvatar) {
+            currentAvatar.innerHTML = `<img src="${avatarUrl}" class="avatar-img" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+        }
+        if (profileAvatarContent) {
+            profileAvatarContent.innerHTML = `<img src="${avatarUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+        }
     } else {
         const initial = (currentUser?.username || 'U')[0].toUpperCase();
-        currentAvatar.innerHTML = initial;
-        profileAvatarContent.innerHTML = initial;
+        if (currentAvatar) currentAvatar.innerHTML = initial;
+        if (profileAvatarContent) profileAvatarContent.innerHTML = initial;
     }
 }
 
+function escapeHtml(str) { 
+    if (!str) return ''; 
+    return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); 
+}
+
 // Регистрация
-document.getElementById('registerBtn').onclick = async () => {
-    const phone = document.getElementById('phone').value;
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
-    const bio = document.getElementById('bio').value;
-    
-    if (!validatePhone(phone)) {
-        document.getElementById('phone').classList.add('error-input');
-        alert('❌ Телефон должен содержать только цифры (10-15 символов)');
-        setTimeout(() => document.getElementById('phone').classList.remove('error-input'), 2000);
-        return;
-    }
-    document.getElementById('phone').classList.remove('error-input');
-    
-    if (!password) {
-        alert('❌ Введите пароль');
-        return;
-    }
-    
-    const res = await fetch('/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, password, username: username || phone, bio })
-    });
-    const data = await res.json();
-    if (res.ok) {
-        setToken(data.token);
-        currentUser = { id: data.userId, is_admin: data.isAdmin };
-        initApp();
-    } else alert(data.error);
-};
+const registerBtn = document.getElementById('registerBtn');
+if (registerBtn) {
+    registerBtn.onclick = async () => {
+        const phone = document.getElementById('phone').value;
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const bio = document.getElementById('bio').value;
+        
+        if (!validatePhone(phone)) {
+            document.getElementById('phone').classList.add('error-input');
+            alert('❌ Телефон должен содержать только цифры (10-15 символов)');
+            setTimeout(() => document.getElementById('phone').classList.remove('error-input'), 2000);
+            return;
+        }
+        document.getElementById('phone').classList.remove('error-input');
+        
+        if (!password) {
+            alert('❌ Введите пароль');
+            return;
+        }
+        
+        const res = await fetch('/api/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone, password, username: username || phone, bio })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            setToken(data.token);
+            currentUser = { id: data.userId, is_admin: data.isAdmin };
+            initApp();
+        } else alert(data.error);
+    };
+}
 
 // Логин
-document.getElementById('loginBtn').onclick = async () => {
-    const phone = document.getElementById('phone').value;
-    const password = document.getElementById('password').value;
-    const res = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, password })
-    });
-    const data = await res.json();
-    if (res.ok) {
-        setToken(data.token);
-        currentUser = { id: data.userId, is_admin: data.isAdmin };
-        initApp();
-    } else alert(data.error);
-};
+const loginBtn = document.getElementById('loginBtn');
+if (loginBtn) {
+    loginBtn.onclick = async () => {
+        const phone = document.getElementById('phone').value;
+        const password = document.getElementById('password').value;
+        const res = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone, password })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            setToken(data.token);
+            currentUser = { id: data.userId, is_admin: data.isAdmin };
+            initApp();
+        } else alert(data.error);
+    };
+}
 
-logoutBtn.onclick = () => {
-    clearToken();
-    if (socket) socket.disconnect();
-    authDiv.style.display = 'flex';
-    appDiv.style.display = 'none';
-};
+if (logoutBtn) {
+    logoutBtn.onclick = () => {
+        clearToken();
+        if (socket) socket.disconnect();
+        authDiv.style.display = 'flex';
+        appDiv.style.display = 'none';
+    };
+}
 
 async function initApp() {
     authDiv.style.display = 'none';
@@ -989,7 +1149,7 @@ async function loadUserInfo() {
         currentUsername.textContent = user.username || user.phone;
         moonsCount.textContent = user.moons;
         updateAvatarDisplay(user.avatar);
-        if (user.is_admin) adminPanel.style.display = 'block';
+        if (user.is_admin && adminPanel) adminPanel.style.display = 'block';
     }
 }
 
@@ -1011,6 +1171,7 @@ async function loadChats() {
 }
 
 function renderChatList(chats) {
+    if (!chatsContainer) return;
     chatsContainer.innerHTML = '';
     for (const chat of chats) {
         let title = chat.title;
@@ -1029,7 +1190,7 @@ function renderChatList(chats) {
                          <div class="chat-name">${escapeHtml(title)}</div>`;
         div.onclick = () => {
             openChat(chat.id);
-            if (window.innerWidth < 768) sidebar.classList.remove('open');
+            if (window.innerWidth < 768 && sidebar) sidebar.classList.remove('open');
         };
         chatsContainer.appendChild(div);
     }
@@ -1047,7 +1208,7 @@ async function openChat(chatId) {
             const other = chat.members.find(m => m.userId != currentUser.id);
             title = other ? other.username || other.userId : 'Unknown';
         }
-        chatHeaderName.textContent = title;
+        if (chatHeaderName) chatHeaderName.textContent = title;
         document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
         const active = document.querySelector(`.chat-item[data-chat-id="${chatId}"]`);
         if (active) active.classList.add('active');
@@ -1055,6 +1216,7 @@ async function openChat(chatId) {
 }
 
 function renderMessages(messages) {
+    if (!messagesContainer) return;
     messagesContainer.innerHTML = '';
     for (const msg of messages) {
         const isOutgoing = msg.sender_id === currentUser.id;
@@ -1109,247 +1271,292 @@ async function showUserProfile(userId) {
         selectedUserId = user.id;
         isViewingOwnProfile = (userId === currentUser.id);
         
-        profileName.textContent = user.username || `User ${user.id}`;
-        profileUserId.textContent = `🆔 ID: ${user.id}`;
-        profileUsername.textContent = `@${user.username || user.id}`;
-        profileBio.textContent = user.bio || 'Нет информации о себе';
-        profileMoons.textContent = user.moons;
+        if (profileName) profileName.textContent = user.username || `User ${user.id}`;
+        if (profileUserId) profileUserId.textContent = `🆔 ID: ${user.id}`;
+        if (profileUsername) profileUsername.textContent = `@${user.username || user.id}`;
+        if (profileBio) profileBio.textContent = user.bio || 'Нет информации о себе';
+        if (profileMoons) profileMoons.textContent = user.moons;
         
         if (user.avatar) {
-            profileAvatarContent.innerHTML = `<img src="${user.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+            if (profileAvatarContent) profileAvatarContent.innerHTML = `<img src="${user.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
         } else {
-            profileAvatarContent.textContent = (user.username || 'U')[0].toUpperCase();
+            if (profileAvatarContent) profileAvatarContent.textContent = (user.username || 'U')[0].toUpperCase();
         }
         
         const gifts = await loadUserGifts(user.id);
-        profileGiftsCount.textContent = gifts.length;
+        if (profileGiftsCount) profileGiftsCount.textContent = gifts.length;
         
-        profileMessageBtn.style.display = isViewingOwnProfile ? 'none' : 'block';
-        uploadAvatarBtn.style.display = isViewingOwnProfile ? 'block' : 'none';
-        profileGiftsBtn.textContent = isViewingOwnProfile ? '🎁 Мои подарки' : '🎁 Подарки пользователя';
+        if (profileMessageBtn) profileMessageBtn.style.display = isViewingOwnProfile ? 'none' : 'block';
+        if (uploadAvatarBtn) uploadAvatarBtn.style.display = isViewingOwnProfile ? 'block' : 'none';
+        if (profileGiftsBtn) profileGiftsBtn.textContent = isViewingOwnProfile ? '🎁 Мои подарки' : '🎁 Подарки пользователя';
         
-        profileModal.style.display = 'flex';
+        if (profileModal) profileModal.style.display = 'flex';
     }
 }
 
-profileBtn.onclick = () => showUserProfile(currentUser.id);
+if (profileBtn) {
+    profileBtn.onclick = () => showUserProfile(currentUser.id);
+}
 
 // Загрузка аватарки
-uploadAvatarBtn.onclick = () => avatarInput.click();
+if (uploadAvatarBtn) {
+    uploadAvatarBtn.onclick = () => avatarInput.click();
+}
 
-avatarInput.onchange = async () => {
-    const file = avatarInput.files[0];
-    if (!file) return;
-    
-    const formData = new FormData();
-    formData.append('avatar', file);
-    
-    try {
-        const res = await fetch('/api/upload-avatar', {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${getToken()}` },
-            body: formData
-        });
-        const data = await res.json();
-        if (res.ok && data.avatarUrl) {
-            updateAvatarDisplay(data.avatarUrl);
-            alert('✅ Аватар успешно обновлён!');
-            profileModal.style.display = 'none';
-        } else {
-            alert('Ошибка загрузки аватарки');
+if (avatarInput) {
+    avatarInput.onchange = async () => {
+        const file = avatarInput.files[0];
+        if (!file) return;
+        
+        const formData = new FormData();
+        formData.append('avatar', file);
+        
+        try {
+            const res = await fetch('/api/upload-avatar', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${getToken()}` },
+                body: formData
+            });
+            const data = await res.json();
+            if (res.ok && data.avatarUrl) {
+                updateAvatarDisplay(data.avatarUrl);
+                alert('✅ Аватар успешно обновлён!');
+                if (profileModal) profileModal.style.display = 'none';
+            } else {
+                alert('Ошибка загрузки аватарки');
+            }
+        } catch (error) {
+            console.error('Avatar upload error:', error);
+            alert('Ошибка соединения');
         }
-    } catch (error) {
-        console.error('Avatar upload error:', error);
-        alert('Ошибка соединения');
-    }
-    avatarInput.value = '';
-};
+        avatarInput.value = '';
+    };
+}
 
-profileGiftsBtn.onclick = async () => {
-    const userId = isViewingOwnProfile ? currentUser.id : selectedUserId;
-    const gifts = await loadUserGifts(userId);
-    userGiftsList.innerHTML = '';
-    if (gifts.length === 0) {
-        userGiftsList.innerHTML = '<div style="text-align:center; padding:20px;">Нет подарков</div>';
-    } else {
-        for (const g of gifts) {
+if (profileGiftsBtn) {
+    profileGiftsBtn.onclick = async () => {
+        const userId = isViewingOwnProfile ? currentUser.id : selectedUserId;
+        const gifts = await loadUserGifts(userId);
+        if (!userGiftsList) return;
+        userGiftsList.innerHTML = '';
+        if (gifts.length === 0) {
+            userGiftsList.innerHTML = '<div style="text-align:center; padding:20px;">Нет подарков</div>';
+        } else {
+            for (const g of gifts) {
+                const div = document.createElement('div');
+                div.className = 'gift-item';
+                div.innerHTML = `
+                    <div class="gift-info">
+                        <div class="gift-icon">${g.icon}</div>
+                        <div>
+                            <div class="gift-name">${g.name}</div>
+                            <div class="gift-price">🌙 ${g.price} лун</div>
+                            ${g.from_username ? `<div style="font-size:10px; color:#c96eff;">от ${escapeHtml(g.from_username)}</div>` : ''}
+                        </div>
+                    </div>
+                    ${isViewingOwnProfile ? `<button class="convert-btn" data-id="${g.id}" data-price="${g.price}">💰 Конвертировать</button>` : ''}
+                `;
+                if (isViewingOwnProfile) {
+                    const convertBtn = div.querySelector('.convert-btn');
+                    convertBtn.onclick = async (e) => {
+                        e.stopPropagation();
+                        if (confirm(`Конвертировать ${g.name} в ${g.price} лун?`)) {
+                            const res = await fetch('/api/convert-gift', {
+                                method: 'POST',
+                                headers: { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ giftId: g.id })
+                            });
+                            if (res.ok) {
+                                alert(`✅ Вы получили ${g.price} лун!`);
+                                await loadUserInfo();
+                                profileGiftsBtn.click();
+                            } else alert('Ошибка конвертации');
+                        }
+                    };
+                }
+                userGiftsList.appendChild(div);
+            }
+        }
+        if (profileModal) profileModal.style.display = 'none';
+        if (userGiftsModal) userGiftsModal.style.display = 'flex';
+    };
+}
+
+if (closeUserGiftsBtn) {
+    closeUserGiftsBtn.onclick = () => {
+        if (userGiftsModal) userGiftsModal.style.display = 'none';
+    };
+}
+
+if (profileMessageBtn) {
+    profileMessageBtn.onclick = async () => {
+        if (!selectedUserId) return;
+        const token = getToken();
+        const chatRes = await fetch('/api/chats/direct', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId2: selectedUserId })
+        });
+        const chat = await chatRes.json();
+        if (chatRes.ok && chat.id) {
+            if (profileModal) profileModal.style.display = 'none';
+            await loadChats();
+            await openChat(chat.id);
+        } else {
+            alert('Ошибка создания чата');
+        }
+    };
+}
+
+if (closeProfileBtn) {
+    closeProfileBtn.onclick = () => {
+        if (profileModal) profileModal.style.display = 'none';
+        selectedUserId = null;
+    };
+}
+
+function editMessage(id, old) { 
+    const newText = prompt('Редактировать:', old); 
+    if (newText && newText !== old) socket.emit('edit_message', { messageId: id, newText }); 
+}
+function deleteMessage(id) { 
+    if (confirm('Удалить?')) socket.emit('delete_message', { messageId: id }); 
+}
+
+if (sendBtn) {
+    sendBtn.onclick = () => {
+        if (!currentChatId) return alert('Выберите чат');
+        const text = messageInput.value.trim();
+        if (!text) return;
+        socket.emit('send_message', { chatId: currentChatId, text });
+        messageInput.value = '';
+    };
+}
+
+if (attachBtn) {
+    attachBtn.onclick = () => fileInput.click();
+}
+
+if (fileInput) {
+    fileInput.onchange = async () => {
+        const file = fileInput.files[0];
+        if (!file) return;
+        if (file.size > 50 * 1024 * 1024) {
+            alert('Файл слишком большой! Максимум 50 MB');
+            fileInput.value = '';
+            return;
+        }
+        const formData = new FormData();
+        formData.append('file', file);
+        try {
+            const res = await fetch('/api/upload', { method: 'POST', headers: { 'Authorization': `Bearer ${getToken()}` }, body: formData });
+            const data = await res.json();
+            if (res.ok && data.filePath) {
+                socket.emit('send_message', { chatId: currentChatId, text: '', filePath: data.filePath, fileType: data.fileType });
+            } else {
+                alert('Ошибка загрузки файла: ' + (data.error || 'неизвестная ошибка'));
+            }
+        } catch (error) {
+            console.error('Upload error:', error);
+            alert('Ошибка соединения при загрузке файла');
+        }
+        fileInput.value = '';
+    };
+}
+
+if (giftBtn) {
+    giftBtn.onclick = () => {
+        if (!currentChatId) return alert('Выберите чат');
+        if (!giftsList) return;
+        giftsList.innerHTML = '';
+        for (const g of allGifts) {
             const div = document.createElement('div');
             div.className = 'gift-item';
-            div.innerHTML = `
-                <div class="gift-info">
-                    <div class="gift-icon">${g.icon}</div>
-                    <div>
-                        <div>${g.name}</div>
-                        <div class="gift-price">🌙 ${g.price} лун</div>
-                        ${g.from_username ? `<div style="font-size:10px; color:#c96eff;">от ${escapeHtml(g.from_username)}</div>` : ''}
-                    </div>
-                </div>
-                ${isViewingOwnProfile ? `<button class="convert-btn" data-id="${g.id}" data-price="${g.price}">💰 Конвертировать</button>` : ''}
-            `;
-            if (isViewingOwnProfile) {
-                const convertBtn = div.querySelector('.convert-btn');
-                convertBtn.onclick = async (e) => {
-                    e.stopPropagation();
-                    if (confirm(`Конвертировать ${g.name} в ${g.price} лун?`)) {
-                        const res = await fetch('/api/convert-gift', {
-                            method: 'POST',
-                            headers: { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ giftId: g.id })
-                        });
-                        if (res.ok) {
-                            alert(`✅ Вы получили ${g.price} лун!`);
-                            await loadUserInfo();
-                            profileGiftsBtn.click();
-                        } else alert('Ошибка конвертации');
-                    }
-                };
-            }
-            userGiftsList.appendChild(div);
+            div.innerHTML = `<div class="gift-info"><div class="gift-icon">${g.icon}</div><div><div class="gift-name">${g.name}</div><div class="gift-price">🌙 ${g.price}</div></div></div><div>🎁</div>`;
+            div.onclick = () => sendGift(g.id);
+            giftsList.appendChild(div);
         }
-    }
-    profileModal.style.display = 'none';
-    userGiftsModal.style.display = 'flex';
-};
-
-closeUserGiftsBtn.onclick = () => {
-    userGiftsModal.style.display = 'none';
-};
-
-profileMessageBtn.onclick = async () => {
-    if (!selectedUserId) return;
-    const token = getToken();
-    const chatRes = await fetch('/api/chats/direct', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId2: selectedUserId })
-    });
-    const chat = await chatRes.json();
-    if (chatRes.ok && chat.id) {
-        profileModal.style.display = 'none';
-        await loadChats();
-        await openChat(chat.id);
-    } else {
-        alert('Ошибка создания чата');
-    }
-};
-
-closeProfileBtn.onclick = () => {
-    profileModal.style.display = 'none';
-    selectedUserId = null;
-};
-
-function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
-function editMessage(id, old) { const newText = prompt('Редактировать:', old); if (newText && newText !== old) socket.emit('edit_message', { messageId: id, newText }); }
-function deleteMessage(id) { if (confirm('Удалить?')) socket.emit('delete_message', { messageId: id }); }
-
-sendBtn.onclick = () => {
-    if (!currentChatId) return alert('Выберите чат');
-    const text = messageInput.value.trim();
-    if (!text) return;
-    socket.emit('send_message', { chatId: currentChatId, text });
-    messageInput.value = '';
-};
-
-attachBtn.onclick = () => fileInput.click();
-fileInput.onchange = async () => {
-    const file = fileInput.files[0];
-    if (!file) return;
-    if (file.size > 50 * 1024 * 1024) {
-        alert('Файл слишком большой! Максимум 50 MB');
-        fileInput.value = '';
-        return;
-    }
-    const formData = new FormData();
-    formData.append('file', file);
-    try {
-        const res = await fetch('/api/upload', { method: 'POST', headers: { 'Authorization': `Bearer ${getToken()}` }, body: formData });
-        const data = await res.json();
-        if (res.ok && data.filePath) {
-            socket.emit('send_message', { chatId: currentChatId, text: '', filePath: data.filePath, fileType: data.fileType });
-        } else {
-            alert('Ошибка загрузки файла: ' + (data.error || 'неизвестная ошибка'));
-        }
-    } catch (error) {
-        console.error('Upload error:', error);
-        alert('Ошибка соединения при загрузке файла');
-    }
-    fileInput.value = '';
-};
-
-giftBtn.onclick = () => {
-    if (!currentChatId) return alert('Выберите чат');
-    giftsList.innerHTML = '';
-    for (const g of allGifts) {
-        const div = document.createElement('div');
-        div.className = 'gift-item';
-        div.innerHTML = `<div class="gift-info"><div class="gift-icon">${g.icon}</div><div><div>${g.name}</div><div class="gift-price">🌙 ${g.price}</div></div></div><div>🎁</div>`;
-        div.onclick = () => sendGift(g.id);
-        giftsList.appendChild(div);
-    }
-    giftModal.style.display = 'flex';
-};
+        if (giftModal) giftModal.style.display = 'flex';
+    };
+}
 
 async function sendGift(giftId) {
     const token = getToken();
     const res = await fetch('/api/send-gift', { method: 'POST', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ giftId, chatId: currentChatId }) });
     const data = await res.json();
-    if (res.ok) { giftModal.style.display = 'none'; await loadUserInfo(); }
-    else alert(data.error || 'Ошибка при отправке подарка');
+    if (res.ok) { 
+        if (giftModal) giftModal.style.display = 'none'; 
+        await loadUserInfo();
+    } else {
+        alert(data.error || 'Ошибка при отправке подарка');
+    }
 }
 
-searchBtn.onclick = async () => {
-    const phone = searchPhone.value.trim();
-    if (!phone) return alert('Введите телефон');
-    const token = getToken();
-    try {
-        const res = await fetch(`/api/user/by-phone/${phone}`, { headers: { 'Authorization': `Bearer ${token}` } });
-        if (res.status === 404) return alert('❌ Пользователь не найден');
-        if (!res.ok) return alert('Ошибка поиска');
-        const user = await res.json();
-        if (!user || !user.id) return alert('Пользователь не найден');
-        const chatRes = await fetch('/api/chats/direct', {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId2: user.id })
-        });
-        const chat = await chatRes.json();
-        if (chatRes.ok && chat.id) {
-            alert(`✅ Чат с ${user.username || user.id} создан!`);
-            await loadChats();
-            await openChat(chat.id);
-            searchPhone.value = '';
-            if (window.innerWidth < 768) sidebar.classList.remove('open');
-        } else alert('Ошибка создания чата');
-    } catch (error) { alert('Ошибка соединения'); }
-};
+if (searchBtn) {
+    searchBtn.onclick = async () => {
+        const phone = searchPhone.value.trim();
+        if (!phone) return alert('Введите телефон');
+        const token = getToken();
+        try {
+            const res = await fetch(`/api/user/by-phone/${phone}`, { headers: { 'Authorization': `Bearer ${token}` } });
+            if (res.status === 404) return alert('❌ Пользователь не найден');
+            if (!res.ok) return alert('Ошибка поиска');
+            const user = await res.json();
+            if (!user || !user.id) return alert('Пользователь не найден');
+            const chatRes = await fetch('/api/chats/direct', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId2: user.id })
+            });
+            const chat = await chatRes.json();
+            if (chatRes.ok && chat.id) {
+                alert(`✅ Чат с ${user.username || user.id} создан!`);
+                await loadChats();
+                await openChat(chat.id);
+                searchPhone.value = '';
+                if (window.innerWidth < 768 && sidebar) sidebar.classList.remove('open');
+            } else alert('Ошибка создания чата');
+        } catch (error) { alert('Ошибка соединения'); }
+    };
+}
 
-searchPhone.addEventListener('keypress', (e) => { if (e.key === 'Enter') searchBtn.click(); });
+if (searchPhone) {
+    searchPhone.addEventListener('keypress', (e) => { if (e.key === 'Enter' && searchBtn) searchBtn.click(); });
+}
 
-document.getElementById('adminAddMoonsBtn').onclick = async () => {
-    const userId = document.getElementById('adminUserId').value;
-    const amount = document.getElementById('adminMoonsAmount').value;
-    if (!userId || !amount) return alert('Введите ID и количество');
-    const res = await fetch('/api/admin/add-moons', { method: 'POST', headers: { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: parseInt(userId), amount: parseInt(amount) }) });
-    const data = await res.json();
-    if (res.ok) { alert(`Выдано ${amount} лун`); loadUserInfo(); }
-    else alert(data.error);
-};
+if (document.getElementById('adminAddMoonsBtn')) {
+    document.getElementById('adminAddMoonsBtn').onclick = async () => {
+        const userId = document.getElementById('adminUserId').value;
+        const amount = document.getElementById('adminMoonsAmount').value;
+        if (!userId || !amount) return alert('Введите ID и количество');
+        const res = await fetch('/api/admin/add-moons', { method: 'POST', headers: { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: parseInt(userId), amount: parseInt(amount) }) });
+        const data = await res.json();
+        if (res.ok) { alert(`Выдано ${amount} лун`); loadUserInfo(); }
+        else alert(data.error);
+    };
+}
 
-document.getElementById('closeModalBtn').onclick = () => giftModal.style.display = 'none';
+if (document.getElementById('closeModalBtn')) {
+    document.getElementById('closeModalBtn').onclick = () => {
+        if (giftModal) giftModal.style.display = 'none';
+    };
+}
 
-messageInput.addEventListener('input', () => {
-    if (!currentChatId) return;
-    socket.emit('typing', { chatId: currentChatId });
-    if (window.typingTimeout) clearTimeout(window.typingTimeout);
-    window.typingTimeout = setTimeout(() => {}, 1000);
-});
+if (messageInput) {
+    messageInput.addEventListener('input', () => {
+        if (!currentChatId) return;
+        socket.emit('typing', { chatId: currentChatId });
+        if (window.typingTimeout) clearTimeout(window.typingTimeout);
+        window.typingTimeout = setTimeout(() => {}, 1000);
+    });
+}
 
 function connectSocket() {
     socket = io({ auth: { token: getToken() } });
     socket.on('connect', () => console.log('Socket connected'));
     socket.on('new_message', (msg) => {
         loadChats();
-        if (currentChatId == msg.chat_id) {
+        if (currentChatId == msg.chat_id && messagesContainer) {
             const isOutgoing = msg.sender_id === currentUser.id;
             const div = document.createElement('div');
             div.className = `message ${isOutgoing ? 'outgoing' : 'incoming'}`;
@@ -1379,20 +1586,20 @@ function connectSocket() {
         }
     });
     socket.on('message_edited', ({ messageId, newText }) => {
-        const d = messagesContainer.querySelector(`.message[data-id="${messageId}"]`);
+        const d = messagesContainer?.querySelector(`.message[data-id="${messageId}"]`);
         if (d) { const t = d.querySelector('.message-text'); if (t) t.innerHTML = escapeHtml(newText); }
     });
     socket.on('message_deleted', ({ messageId }) => {
-        const d = messagesContainer.querySelector(`.message[data-id="${messageId}"]`);
+        const d = messagesContainer?.querySelector(`.message[data-id="${messageId}"]`);
         if (d) d.innerHTML = '<div class="message-text">[Удалено]</div>';
     });
     socket.on('user_typing', ({ userId, chatId }) => {
-        if (chatId === currentChatId && userId !== currentUser.id) {
+        if (chatId === currentChatId && userId !== currentUser.id && typingIndicator) {
             typingIndicator.textContent = 'Печатает...';
-            setTimeout(() => typingIndicator.textContent = '', 2000);
+            setTimeout(() => { if (typingIndicator) typingIndicator.textContent = ''; }, 2000);
         }
     });
-    socket.on('moons_updated', ({ userId, moons }) => { if (userId === currentUser.id) moonsCount.textContent = moons; });
+    socket.on('moons_updated', ({ userId, moons }) => { if (userId === currentUser.id && moonsCount) moonsCount.textContent = moons; });
 }
 
 // Проверка сохранённой сессии
@@ -1409,8 +1616,8 @@ function connectSocket() {
             } else { clearToken(); }
         } catch (e) { clearToken(); }
     }
-    authDiv.style.display = 'flex';
-    appDiv.style.display = 'none';
+    if (authDiv) authDiv.style.display = 'flex';
+    if (appDiv) appDiv.style.display = 'none';
 })();
 </script>
 </body>
