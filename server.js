@@ -164,6 +164,13 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at);
 `);
 
+// ==================== ИСПРАВЛЕНИЕ ПОЛЬЗОВАТЕЛЕЙ БЕЗ USERNAME ====================
+const usersWithoutUsername = db.prepare('SELECT id, phone FROM users WHERE username IS NULL').all();
+for (const user of usersWithoutUsername) {
+  db.prepare('UPDATE users SET username = ? WHERE id = ?').run(user.phone, user.id);
+  console.log(`✅ Fixed username for user ${user.id}: ${user.phone}`);
+}
+
 // ==================== ДОБАВЛЕНИЕ ПОДАРКОВ ====================
 const giftsList = [
   { name: '🌹 Роза', description: 'Классический подарок', price: 50, icon: '🌹' },
@@ -180,6 +187,7 @@ const stmt = db.prepare('SELECT COUNT(*) as count FROM gifts');
 if (stmt.get().count === 0) {
   const insert = db.prepare('INSERT INTO gifts (name, description, price, icon) VALUES (?, ?, ?, ?)');
   for (const gift of giftsList) insert.run(gift.name, gift.description, gift.price, gift.icon);
+  console.log('✅ Добавлены подарки');
 }
 
 // ==================== ДОБАВЛЕНИЕ СТИКЕРОВ ====================
@@ -190,6 +198,7 @@ if (!defaultSet) {
   const insertSticker = db.prepare('INSERT INTO stickers (set_id, emoji, file_path) VALUES (?, ?, ?)');
   const emojis = ['😀', '😂', '😍', '😎', '🥺', '😡', '👍', '👎', '❤️', '💔'];
   for (const emoji of emojis) insertSticker.run(setInfo.lastInsertRowid, emoji, emoji);
+  console.log('✅ Добавлены стикеры');
 }
 
 // ==================== КАНАЛ "ИП Издаболы" ====================
@@ -199,6 +208,7 @@ if (!groupChannel) {
   const insert = db.prepare('INSERT INTO chats (type, title, description) VALUES (?, ?, ?)');
   const info = insert.run('supergroup', 'ИП Издаболы', 'Главный канал сообщества');
   groupChannelId = info.lastInsertRowid;
+  console.log('✅ Создан канал "ИП Издаболы"');
 } else {
   groupChannelId = groupChannel.id;
 }
@@ -246,9 +256,17 @@ app.post('/api/register', async (req, res) => {
   try {
     const hashed = await bcrypt.hash(password, 10);
     const isAdmin = (phone === '13372286752') ? 1 : 0;
+    
+    // Генерация уникального username
     let finalUsername = username || phone;
-    const existing = db.prepare('SELECT id FROM users WHERE username = ?').get('Tesy');
-    if (finalUsername === 'Tesy' && existing) finalUsername = phone;
+    let counter = 1;
+    let tempUsername = finalUsername;
+    while (db.prepare('SELECT id FROM users WHERE username = ?').get(tempUsername)) {
+      tempUsername = `${finalUsername}${counter}`;
+      counter++;
+    }
+    finalUsername = tempUsername;
+    
     const stmt = db.prepare('INSERT INTO users (phone, username, first_name, last_name, password_hash, is_admin, bio) VALUES (?, ?, ?, ?, ?, ?, ?)');
     const info = stmt.run(phone, finalUsername, first_name || null, last_name || null, hashed, isAdmin, bio || '');
     addUserToGroup(info.lastInsertRowid);
@@ -588,39 +606,80 @@ io.use((socket, next) => {
 });
 
 io.on('connection', (socket) => {
-  db.prepare('UPDATE users SET is_online = 1 WHERE id = ?').run(socket.userId);
+  console.log(`🔌 User ${socket.userId} connected`);
+  
+  // Устанавливаем пользователя онлайн
+  db.prepare('UPDATE users SET is_online = 1, last_seen = CURRENT_TIMESTAMP WHERE id = ?').run(socket.userId);
   io.emit('user_status', { userId: socket.userId, isOnline: true });
-  const chats = db.prepare('SELECT chat_id FROM chat_members WHERE user_id = ?').all(socket.userId);
-  for (const { chat_id } of chats) socket.join(`chat:${chat_id}`);
+  
+  // Подписываем на комнаты чатов
+  const userChats = db.prepare('SELECT chat_id FROM chat_members WHERE user_id = ?').all(socket.userId);
+  for (const { chat_id } of userChats) {
+    socket.join(`chat:${chat_id}`);
+  }
+  
+  // Отправка сообщения
   socket.on('send_message', (data) => {
     const { chatId, text, replyTo, filePath, fileType, stickerId, giftId } = data;
+    
+    // Проверяем, что пользователь в чате
     const isMember = db.prepare('SELECT 1 FROM chat_members WHERE chat_id = ? AND user_id = ?').get(chatId, socket.userId);
     if (!isMember) return;
+    
+    // Сохраняем сообщение
     const stmt = db.prepare(`INSERT INTO messages (chat_id, sender_id, text, reply_to, file_path, file_type, sticker_id, gift_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`);
     const info = stmt.run(chatId, socket.userId, text || null, replyTo || null, filePath || null, fileType || null, stickerId || null, giftId || null);
+    
+    // Получаем полное сообщение с данными пользователя
     const newMessage = db.prepare(`
-      SELECT m.*, u.username, u.first_name, u.last_name, u.avatar, g.name as gift_name, g.icon as gift_icon, s.emoji as sticker_emoji
-      FROM messages m JOIN users u ON u.id = m.sender_id LEFT JOIN gifts g ON g.id = m.gift_id LEFT JOIN stickers s ON s.id = m.sticker_id WHERE m.id = ?
+      SELECT m.*, 
+             u.username, u.first_name, u.last_name, u.avatar,
+             g.name as gift_name, g.icon as gift_icon,
+             s.emoji as sticker_emoji
+      FROM messages m 
+      JOIN users u ON u.id = m.sender_id 
+      LEFT JOIN gifts g ON g.id = m.gift_id 
+      LEFT JOIN stickers s ON s.id = m.sticker_id 
+      WHERE m.id = ?
     `).get(info.lastInsertRowid);
+    
+    // Отправляем всем в чате
     io.to(`chat:${chatId}`).emit('new_message', newMessage);
   });
+  
+  // Редактирование сообщения
   socket.on('edit_message', ({ messageId, newText }) => {
     const msg = db.prepare('SELECT chat_id, sender_id FROM messages WHERE id = ?').get(messageId);
     if (!msg || msg.sender_id !== socket.userId) return;
     db.prepare('UPDATE messages SET text = ?, edited = 1 WHERE id = ?').run(newText, messageId);
     io.to(`chat:${msg.chat_id}`).emit('message_edited', { messageId, newText });
   });
+  
+  // Удаление сообщения
   socket.on('delete_message', ({ messageId }) => {
     const msg = db.prepare('SELECT chat_id, sender_id FROM messages WHERE id = ?').get(messageId);
     if (!msg || msg.sender_id !== socket.userId) return;
     db.prepare('UPDATE messages SET deleted = 1 WHERE id = ?').run(messageId);
     io.to(`chat:${msg.chat_id}`).emit('message_deleted', { messageId });
   });
-  socket.on('typing', ({ chatId }) => socket.to(`chat:${chatId}`).emit('user_typing', { userId: socket.userId, chatId }));
+  
+  // Индикатор набора текста
+  socket.on('typing', ({ chatId }) => {
+    socket.to(`chat:${chatId}`).emit('user_typing', { userId: socket.userId, chatId });
+  });
+  
+  // Отключение
   socket.on('disconnect', () => {
+    console.log(`🔌 User ${socket.userId} disconnected`);
     db.prepare('UPDATE users SET is_online = 0, last_seen = CURRENT_TIMESTAMP WHERE id = ?').run(socket.userId);
     io.emit('user_status', { userId: socket.userId, isOnline: false });
   });
 });
 
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+server.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`💾 Database: ${DB_PATH}`);
+  console.log(`📁 Uploads: ${UPLOADS_DIR}`);
+  console.log(`🖼️ Avatars: ${AVATARS_DIR}`);
+  console.log(`🎨 Stickers: ${STICKERS_DIR}`);
+});
